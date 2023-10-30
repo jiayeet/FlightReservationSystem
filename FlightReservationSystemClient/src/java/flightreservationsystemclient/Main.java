@@ -24,7 +24,7 @@ public class Main {
      */
     public static void main(String[] args) {
         
-        //test
+        //test again
         List<Airport> retrieveAllAirports = airportSessionBeanRemote.retrieveAllAirports();
         
         for(Airport airport: retrieveAllAirports)
