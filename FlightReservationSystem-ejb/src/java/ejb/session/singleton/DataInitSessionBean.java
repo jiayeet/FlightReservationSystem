@@ -10,6 +10,7 @@ import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.ejb.LocalBean;
+import javax.ejb.Startup;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
@@ -19,6 +20,7 @@ import javax.persistence.PersistenceContext;
  */
 @Singleton
 @LocalBean
+@Startup
 public class DataInitSessionBean {
 
     @EJB(name = "AirportSessionBeanLocal")
