@@ -4,9 +4,10 @@
  */
 package flightreservationsystemclient;
 
+import ejb.session.stateless.AircraftTypeSessionBeanRemote;
 import ejb.session.stateless.AirportSessionBeanRemote;
-import entity.Airport;
-import java.util.List;
+import ejb.session.stateless.EmployeeSessionBeanRemote;
+import ejb.session.stateless.PartnerSessionBeanRemote;
 import javax.ejb.EJB;
 
 /**
@@ -15,22 +16,23 @@ import javax.ejb.EJB;
  */
 public class Main {
 
+    @EJB(name = "PartnerSessionBeanRemote")
+    private static PartnerSessionBeanRemote partnerSessionBeanRemote;
+    @EJB(name = "AircraftTypeSessionBeanRemote")
+    private static AircraftTypeSessionBeanRemote aircraftTypeSessionBeanRemote;
+    @EJB(name = "EmployeeSessionBeanRemote")
+    private static EmployeeSessionBeanRemote employeeSessionBeanRemote;
     @EJB
     private static AirportSessionBeanRemote airportSessionBeanRemote;
-
+    
+    
     
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
         
-        //test again again
-        List<Airport> retrieveAllAirports = airportSessionBeanRemote.retrieveAllAirports();
-        
-        for(Airport airport: retrieveAllAirports)
-        {
-            System.out.println(airport.getAirportName() + ", " + airport.getIataAirportCode() + ", " + airport.getCity() + ", " + airport.getCountry() + ", " + airport.getState());
-        }
+        MainApp mainApp = new MainApp(employeeSessionBeanRemote);
+        mainApp.runApp();   
     }
-    
 }
