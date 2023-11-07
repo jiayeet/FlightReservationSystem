@@ -20,6 +20,9 @@ import javax.ejb.Startup;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import util.enumeration.EmployeeUserRoleEnum;
+import util.exception.EmployeeNotFoundException;
+import util.exception.EmployeeUsernameExistException;
+import util.exception.UnknownPersistenceException;
 
 /**
  *
@@ -39,37 +42,33 @@ public class DataInitSessionBean {
     @EJB(name = "AirportSessionBeanLocal")
     private AirportSessionBeanLocal airportSessionBeanLocal;
     
-    
-    
-
     @PersistenceContext(unitName = "FlightReservationSystem-ejbPU")
     private EntityManager em;
 
-    // Add business logic below. (Right-click in editor and choose
-    // "Insert Code > Add Business Method")
+    public DataInitSessionBean() {
+        
+    }
     
     @PostConstruct
-    public void postConstruct()
-    {
-        if(em.find(Airport.class, 1l) == null)
-        {
-            airportSessionBeanLocal.createNewAirport(new Airport("SIN", "Merlion Airport", "Singapore", "Singapore", "Singapore"));
-            airportSessionBeanLocal.createNewAirport(new Airport("TPE", "Merlion Airport", "Taipei", "Taiwan", "Taiwan"));
+    public void postConstruct() {
+        try {
+            employeeSessionBeanLocal.retrieveEmployeeByUsername("systemAdministrator");
+        } catch (EmployeeNotFoundException ex) {
+            initialiseData();
         }
-        
-        if(em.find(Employee.class, 1l) == null)
+    }
+    
+    private void initialiseData() {
+        try 
         {
-            employeeSessionBeanLocal.createNewEmployee(new Employee("firstName", "lastName", "systemAdministrator", "password", EmployeeUserRoleEnum.SYSTEMADMINISTRATOR));
+        airportSessionBeanLocal.createNewAirport(new Airport("SIN", "Merlion Airport", "Singapore", "Singapore", "Singapore"));
+        airportSessionBeanLocal.createNewAirport(new Airport("TPE", "Merlion Airport", "Taipei", "Taiwan", "Taiwan"));
+        employeeSessionBeanLocal.createNewEmployee(new Employee("firstName", "lastName", "systemAdministrator", "password", EmployeeUserRoleEnum.SYSTEMADMINISTRATOR));
+        partnerSessionBeanLocal.createNewPartner(new Partner("firstName", "lastName", "partner", "password"));
+        aircraftTypeSessionBeanLocal.createNewAircraft(new AircraftType("Boeing 737", 100));
         }
-        
-        if(em.find(Partner.class, 1l) == null)
-        {
-            partnerSessionBeanLocal.createNewPartner(new Partner("firstName", "lastName", "partner", "password"));
-        }
-        
-        if(em.find(AircraftType.class, 1l) == null)
-        {
-            aircraftTypeSessionBeanLocal.createNewAircraft(new AircraftType("Boeing 737", 100));
+        catch (EmployeeUsernameExistException | UnknownPersistenceException ex) {
+            ex.printStackTrace();
         }
     }
 }

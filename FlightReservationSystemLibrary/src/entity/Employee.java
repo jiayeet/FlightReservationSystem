@@ -24,17 +24,17 @@ public class Employee implements Serializable {
     private Long employeeId;
     private String firstName;
     private String lastName;
-    private String userName;
+    private String username;
     private String password;
     private EmployeeUserRoleEnum userRole;
 
     public Employee() {
     }
 
-    public Employee(String firstName, String lastName, String userName, String password, EmployeeUserRoleEnum userRole) {
+    public Employee(String firstName, String lastName, String username, String password, EmployeeUserRoleEnum userRole) {
         this.firstName = firstName;
         this.lastName = lastName;
-        this.userName = userName;
+        this.username = username;
         this.password = password;
         this.userRole = userRole;
     }
@@ -71,15 +71,15 @@ public class Employee implements Serializable {
     /**
      * @return the userName
      */
-    public String getUserName() {
-        return userName;
+    public String getUsername() {
+        return username;
     }
 
     /**
      * @param userName the userName to set
      */
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setUsername(String userName) {
+        this.username = username;
     }
 
     /**
