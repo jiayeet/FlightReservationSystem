@@ -2,3 +2,8 @@
 /FlightReservationSystemClient/nbproject/private/
 /FlightReservationSystem-ejb/nbproject/private/
 /FlightReservationSystemLibrary/nbproject/private/
+/FlightReservationSystemLibrary/build/
+/FlightReservationSystem-ejb/build/
+/FlightReservationSystemLibrary/dist/
+/FlightReservationSystemClient/build/
+/FlightReservationSystem-ejb/dist/
