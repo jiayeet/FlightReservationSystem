@@ -5,5 +5,5 @@ X-COMMENT: Main-Class will be added automatically by build
 Class-Path: jakarta.jakartaee-api-8.0.0.jar lib/jakarta.jakartaee-api-
  8.0.0.jar FlightReservationSystemLibrary.jar lib/FlightReservationSys
  temLibrary.jar 
-Main-Class: flightreservationsystemclient.Main
+Main-Class: flightreservationsystemcustomerclient.Main
 
