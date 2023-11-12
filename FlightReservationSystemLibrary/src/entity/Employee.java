@@ -5,10 +5,15 @@
 package entity;
 
 import java.io.Serializable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import util.enumeration.EmployeeUserRoleEnum;
 
 /**
@@ -22,10 +27,25 @@ public class Employee implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long employeeId;
+    @Column(nullable = false, length = 32)
+    @NotNull
+    @Size(min = 1, max = 32)
     private String firstName;
+    @Column(nullable = false, length = 32)
+    @NotNull
+    @Size(min = 1, max = 32)
     private String lastName;
+    @Column(nullable = false, length = 32)
+    @NotNull
+    @Size(min = 6, max = 32)
     private String username;
+    @Column(nullable = false, length = 32)
+    @NotNull
+    @Size(min = 6, max = 32)
     private String password;
+    /*@Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @NotNull*/
     private EmployeeUserRoleEnum userRole;
 
     public Employee() {

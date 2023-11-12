@@ -5,10 +5,13 @@
 package entity;
 
 import java.io.Serializable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  *
@@ -21,9 +24,21 @@ public class Partner implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long partnerId;
+    @Column(nullable = false, length = 32)
+    @NotNull
+    @Size(min = 1, max = 32)
     private String firstName;
+    @Column(nullable = false, length = 32)
+    @NotNull
+    @Size(min = 1, max = 32)
     private String lastName;
+    @Column(nullable = false, unique = true, length = 32)
+    @NotNull
+    @Size(min = 6, max = 32)
     private String userName;
+    @Column(nullable = false, length = 32)
+    @NotNull
+    @Size(min = 6, max = 32)
     private String password;
 
     public Partner() {
