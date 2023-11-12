@@ -7,3 +7,6 @@
 /FlightReservationSystemLibrary/dist/
 /FlightReservationSystemClient/build/
 /FlightReservationSystem-ejb/dist/
+/FlightReservationSystemClient/dist/
+/build/
+/dist/

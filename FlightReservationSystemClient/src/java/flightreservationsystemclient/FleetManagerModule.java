@@ -12,8 +12,8 @@ import java.util.Scanner;
  */
 public class FleetManagerModule {
     
-    public FleetManagerModule() {
-        
+    public FleetManagerModule() 
+    {
     }
     
     public void fleetManagerMenu() {
