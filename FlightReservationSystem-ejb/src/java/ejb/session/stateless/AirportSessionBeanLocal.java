@@ -7,6 +7,7 @@ package ejb.session.stateless;
 import entity.Airport;
 import java.util.List;
 import javax.ejb.Local;
+import util.exception.AirportNotFoundException;
 
 /**
  *
@@ -18,5 +19,9 @@ public interface AirportSessionBeanLocal {
     public Long createNewAirport(Airport newAirport);
 
     public List<Airport> retrieveAllAirports();
+
+    public Airport retrieveAirportByAirportId(Long airportId) throws AirportNotFoundException;
+
+    public Airport retrieveAirportByAirportName(String airportName) throws AirportNotFoundException;
     
 }

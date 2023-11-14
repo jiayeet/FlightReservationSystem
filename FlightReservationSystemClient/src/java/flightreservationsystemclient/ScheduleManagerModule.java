@@ -4,7 +4,14 @@
  */
 package flightreservationsystemclient;
 
+import ejb.session.stateless.FlightRouteSessionBeanRemote;
+import ejb.session.stateless.FlightSessionBeanRemote;
+import entity.Flight;
+import entity.FlightRoute;
 import java.util.Scanner;
+import util.exception.FlightExistException;
+import util.exception.FlightRouteNotFoundException;
+import util.exception.GeneralException;
 
 /**
  *
@@ -12,8 +19,17 @@ import java.util.Scanner;
  */
 public class ScheduleManagerModule {
     
+    private FlightRouteSessionBeanRemote flightRouteSessionBeanRemote;
+    private FlightSessionBeanRemote flightSessionBeanRemote;
+    //private AircraftConfigurationSessionBeanRemote aircraftConfigurationSessionBeanRemote;
+    
     public ScheduleManagerModule() {
         
+    }
+    
+    public ScheduleManagerModule(FlightRouteSessionBeanRemote flightRouteSessionBeanRemote, FlightSessionBeanRemote flightSessionBeanRemote) {
+        this.flightRouteSessionBeanRemote = flightRouteSessionBeanRemote;
+        this.flightSessionBeanRemote = flightSessionBeanRemote;
     }
 
     public void scheduleManagerMenu() {
@@ -80,7 +96,34 @@ public class ScheduleManagerModule {
     }
     
     private void doCreateFlight() {
+        Scanner scanner = new Scanner(System.in);
+        Integer response = 0;
+        Flight newFlight = new Flight();
         
+        System.out.println("*** Flight Reservation System :: Schedule Manager :: Create New Flight ***\n");
+        
+        try {
+        System.out.print("Enter Aircraft Configuration Name>");
+        //AircraftConfiguration aircraftConfig = aircraftConfigurationSessionBeanRemote.retrieveAirportByAirportName(scanner.nextLine().trim());
+        //newFlight.setAircraftConfiguration(aircraftConfig);
+        System.out.print("Enter Flight Route Id>");
+        FlightRoute flightRoute = flightRouteSessionBeanRemote.retrieveFlightRouteByFlightRouteId(scanner.nextLong());
+        //newFlight.setFlightRoute(flightRoute);
+        
+        //add in schedule plan
+    
+        Long newFlightId = flightSessionBeanRemote.createNewFlight(newFlight);
+        System.out.println("New flight route created successfully!: " + newFlightId + "\n");
+        }
+        catch (FlightRouteNotFoundException ex) {
+            System.out.println("An error has occurred while creating the new flight route: The airport does not exist!\n");
+        } 
+        catch (FlightExistException ex) {
+            System.out.println("An error has occurred while creating the new flight route: The flight route already exists!\n");
+        }
+        catch (GeneralException ex) {
+            System.out.println("An unknown error has occurred while registering the new customer!: " + ex.getMessage() + "\n");
+        }
     }
     
     private void doViewAllFlights() {

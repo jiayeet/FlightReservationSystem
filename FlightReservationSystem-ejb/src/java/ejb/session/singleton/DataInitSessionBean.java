@@ -61,8 +61,8 @@ public class DataInitSessionBean {
     private void initialiseData() {
         try 
         {
-        airportSessionBeanLocal.createNewAirport(new Airport("SIN", "Merlion Airport", "Singapore", "Singapore", "Singapore"));
-        airportSessionBeanLocal.createNewAirport(new Airport("TPE", "Merlion Airport", "Taipei", "Taiwan", "Taiwan"));
+        airportSessionBeanLocal.createNewAirport(new Airport("SIN", "Changi", "Singapore", "Singapore", "Singapore"));
+        airportSessionBeanLocal.createNewAirport(new Airport("HKG", "Hong Kong", "Chek Lap Kok", "Hong Kong", "China"));
         employeeSessionBeanLocal.createNewEmployee(new Employee("firstName", "lastName", "systemAdministrator", "password", EmployeeUserRoleEnum.SYSTEMADMINISTRATOR));
         partnerSessionBeanLocal.createNewPartner(new Partner("firstName", "lastName", "partner", "password"));
         aircraftTypeSessionBeanLocal.createNewAircraft(new AircraftType("Boeing 737", 100));
