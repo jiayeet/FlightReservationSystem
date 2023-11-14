@@ -85,9 +85,11 @@ public class FlightRouteSessionBean implements FlightRouteSessionBeanRemote, Fli
     @Override
     public List<FlightRoute> retrieveAllFlightRoutes()
     {
-        Query query = em.createQuery("SELECT f FROM FlightRoute f WHERE (f.originAirport = :originAirport AND f.destinationAirport = :destinationAirport) OR " +
+        /*Query query = em.createQuery("SELECT f FROM FlightRoute f WHERE (f.originAirport = :originAirport AND f.destinationAirport = :destinationAirport) OR " +
                                      "(f.originAirport = :destinationAirport AND f.destinationAirport = :originAirport) " +
-                                     "ORDER BY f.originAirport ASC");
+                                     "ORDER BY f.originAirport ASC");*/
+        
+        Query query = em.createQuery("SELECT fr FROM FlightRoute fr");
         
         return query.getResultList();
     }

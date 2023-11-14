@@ -5,12 +5,15 @@
 package entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 /**
  *
@@ -33,12 +36,25 @@ public class FlightRoute implements Serializable {
     private Airport airportDestination;
     
     //Remember to encapsulate
-    /*@OneToMany(mappedBy = "flightroutes")
+    @OneToMany(mappedBy = "flightroutes")
     private List<Flight> flights;
-    */
     
     public FlightRoute() {
-        //flights = new ArrayList<>();
+        flights = new ArrayList<>();
+    }
+    
+    /**
+     * @return the flights
+     */
+    public List<Flight> getFlights() {
+        return flights;
+    }
+
+    /**
+     * @param flights the flights to set
+     */
+    public void setFlights(List<Flight> flights) {
+        this.flights = flights;
     }
     
     /**

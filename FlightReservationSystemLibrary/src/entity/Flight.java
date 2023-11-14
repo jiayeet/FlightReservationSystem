@@ -10,7 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
+import javax.persistence.ManyToOne;
 
 /**
  *
@@ -31,13 +31,27 @@ public class Flight implements Serializable {
     @JoinColumn(name = "aircraftconfig_id")
     private AircraftConfiguration aircraftConfiguration;*/
     
-    /*@ManyToOne
+    @ManyToOne
+    @JoinColumn(name = "flightRouteId")
     private FlightRoute flightRoute;
-    */
     
     /*@OneToMany(mappedBy = "flights")
     private List<FlightSchedule> flightSchedules;
     */
+    
+    /**
+     * @return the flightRoute
+     */
+    public FlightRoute getFlightRoute() {
+        return flightRoute;
+    }
+
+    /**
+     * @param flightRoute the flightRoute to set
+     */
+    public void setFlightRoute(FlightRoute flightRoute) {
+        this.flightRoute = flightRoute;
+    }
 
     public Flight() {
     }

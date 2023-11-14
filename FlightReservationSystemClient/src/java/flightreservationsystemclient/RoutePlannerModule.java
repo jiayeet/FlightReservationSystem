@@ -145,11 +145,11 @@ public class RoutePlannerModule {
         System.out.println("*** Flight Reservation System :: Route Planner :: View All Flight Routes ***\n");
         
         List<FlightRoute> flightRoutes = flightRouteSessionBeanRemote.retrieveAllFlightRoutes();
-        System.out.printf("%8s%20s%20s\n", "Flight Route ID", "Origin AITA Code", "Destination AITA Code");
+        System.out.printf("%8s%20s%20s\n", "Flight Route ID", "Origin AITA Code ", "Destination AITA Code");
 
         for(FlightRoute flightRoute:flightRoutes)
         {
-            System.out.printf("%8s%20s%20s\n", flightRoute.getFlightRouteId(), flightRoute.getAirportOrigin(), flightRoute.getAirportDestination());
+            System.out.printf("%8s%20s%20s\n", flightRoute.getFlightRouteId(), flightRoute.getAirportOrigin().getIataAirportCode(), flightRoute.getAirportDestination().getIataAirportCode());
         }
         
         System.out.print("Press any key to continue...> ");

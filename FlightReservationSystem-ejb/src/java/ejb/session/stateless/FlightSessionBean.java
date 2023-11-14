@@ -58,14 +58,16 @@ public class FlightSessionBean implements FlightSessionBeanRemote, FlightSession
     @Override
     public List<Flight> retrieveAllFlights()
     {
-        Query query = em.createQuery("SELECT f FROM Flight f\n" +
+        /*Query query = em.createQuery("SELECT f FROM Flight f\n" +
                                      "WHERE f.flightRoute.originAirport.aitaAirportCode = :originAirport\n" +
                                      "  AND f.destinationAirport.aitaAirportCode = :destinationAirport\n" +
                                      "UNION\n" +
                                      "SELECT r FROM FlightRoute r\n" +
                                      "WHERE r.flightRoute.originAirport.aitaAirportCode = :destinationAirport\n" +
                                      "  AND r.flightRoute.destinationAirport.aitaAirportCode = :originAirport\n" +
-                                     "ORDER BY flightNumber ASC, flightType DESC;");
+                                     "ORDER BY flightNumber ASC, flightType DESC;");*/
+        
+        Query query = em.createQuery("Select f FROM Flight f");
         
         return query.getResultList();
     }
@@ -81,7 +83,7 @@ public class FlightSessionBean implements FlightSessionBeanRemote, FlightSession
         }
         else
         {
-            throw new FlightNotFoundException("Staff ID " + flightId + " does not exist!");
+            throw new FlightNotFoundException("Flight ID " + flightId + " does not exist!");
         }
     }
     
@@ -106,7 +108,6 @@ public class FlightSessionBean implements FlightSessionBeanRemote, FlightSession
     @Override
     public void updateFlight(Flight flight) throws FlightNotFoundException, UpdateFlightException
     {
-        //add enable/disable
         if(flight != null && flight.getFlightId() != null)
         {
             Flight flightToUpdate = retrieveFlightByFlightId(flight.getFlightId());
@@ -116,7 +117,7 @@ public class FlightSessionBean implements FlightSessionBeanRemote, FlightSession
                 flightToUpdate.setFlightNumber(flight.getFlightNumber());
                 flightToUpdate.setEnabled(flight.getEnabled());
                 //flightToUpdate.setAircraftConfiguration(flight.getAircraftConfiguration());
-                //flightToUpdate.setFlightRoute(flight.getFlightRoute());
+                flightToUpdate.setFlightRoute(flight.getFlightRoute());
                 //flightToUpdate.setFlightSchedules(flight.getFlightSchedules());
             }
             else
@@ -135,14 +136,17 @@ public class FlightSessionBean implements FlightSessionBeanRemote, FlightSession
     {
         Flight flightToRemove = retrieveFlightByFlightId(flightId);
         
-        //check, don't have associations with flight schedule?, flight schedule not mandatory?
-        /*if(flightToRemove.getAircraftConfiguration() == null && flightRouteToRemove.getFlightRoute() == null && flightRouteToRemove.getFlightSchedulePlan() == null)
+        /*if(flightToRemove.getAircraftConfiguration() == null && flightToRemove.getFlightRoute() == null && flightToRemove.getFlightSchedulePlan() == null)
         {
             em.remove(flightToRemove);
         }
-        else
+        else if(flightToRemove.getAircraftConfiguration() == null || flightToRemove.getFlightRoute() == null || flightToRemove.getFlightSchedulePlan() == null)
         {
             flightToRemove.setEnabled(Boolean.FALSE);
+            throw new DeleteFlightException("Flight ID " + flightId + " has been disabled due to existing associations.");
+        }
+        else
+        {
             throw new DeleteFlightException("Flight ID " + flightId + " is associated with existing aircraft configurations, flight routes and flight schedule plans and cannot be deleted!");
         }*/
     }
