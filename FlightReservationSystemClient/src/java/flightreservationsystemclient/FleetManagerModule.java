@@ -4,7 +4,16 @@
  */
 package flightreservationsystemclient;
 
+import ejb.session.stateless.AircraftConfigurationSessionBeanRemote;
+import entity.AircraftConfiguration;
+import entity.CabinClass;
+import java.util.List;
 import java.util.Scanner;
+import util.enumeration.CabinClassType;
+import util.exception.AircraftConfigurationNotFoundException;
+import util.exception.AircraftTypeMaxSeatCapacityExceededException;
+import util.exception.AircraftTypeNotFoundException;
+import util.exception.CreateNewAircraftConfigurationException;
 
 /**
  *
@@ -12,11 +21,22 @@ import java.util.Scanner;
  */
 public class FleetManagerModule {
     
-    public FleetManagerModule() {
-        
+    private AircraftConfigurationSessionBeanRemote aircraftConfigurationSessionBeanRemote;
+    
+    
+    public FleetManagerModule() 
+    {
     }
     
-    public void fleetManagerMenu() {
+    public FleetManagerModule(AircraftConfigurationSessionBeanRemote aircraftConfigurationSessionBeanRemote) 
+    {
+        this();
+        this.aircraftConfigurationSessionBeanRemote = aircraftConfigurationSessionBeanRemote;
+    }
+    
+    
+    public void fleetManagerMenu()
+    {
         
         Scanner scanner = new Scanner(System.in);
         Integer response = 0;
@@ -66,14 +86,136 @@ public class FleetManagerModule {
     }
     
     public void doCreateNewAircraftConfiguration() {
-        System.out.println("New configuration created!");
+        Scanner scanner = new Scanner(System.in);
+        AircraftConfiguration newAircraftConfiguration = new AircraftConfiguration();
+        
+        System.out.println("*** Flight Reservation System :: Fleet Manager :: Create New Aircraft Configuration ***\n");
+        System.out.print("Enter Aircraft Configuration Name> ");
+        newAircraftConfiguration.setName(scanner.nextLine().trim());
+        Integer numOfCabinClass = 0;
+        
+        do 
+        {
+            System.out.print("Enter Number of Cabin Classes (1 to 4)> ");
+            numOfCabinClass = scanner.nextInt();
+            
+            if (numOfCabinClass > 0 && numOfCabinClass < 5)
+            {
+                newAircraftConfiguration.setNumOfCabinClass(numOfCabinClass);
+            }
+            else
+            {
+                System.out.println("Invalid Number of Cabin Classes!\n");
+            }
+            
+            scanner.nextLine().trim();
+        } while(numOfCabinClass < 1 || numOfCabinClass > 4);
+        
+        for (int i = 1; i <= numOfCabinClass; i++)
+        {
+            CabinClass newCabinClass = new CabinClass();
+            
+            System.out.println("Cabin Class " + i);
+            
+            while(true)
+            {
+                System.out.print("Select Cabin Class Type (1: First Class, 2: Business Class, 3: Premium Economy Class, 4: Economy Class)> ");
+                Integer cabinClassTypeInt = scanner.nextInt();
+                
+                if (cabinClassTypeInt >= 1 && cabinClassTypeInt <= 4) 
+                {
+                    newCabinClass.setCabinClassType(CabinClassType.values()[cabinClassTypeInt-1]);
+                    break;
+                }
+                else 
+                {
+                    System.out.println("Invalid option, please try again!\n");
+                }
+            }
+            
+            // TODO - Bean Validation for each Cabin Class?
+            System.out.print("Enter Number of Aisles (0 to 2)> ");
+            newCabinClass.setNumOfAisles(scanner.nextInt());
+            System.out.print("Enter Number of Rows> ");
+            newCabinClass.setNumOfRows(scanner.nextInt());
+            System.out.print("Enter Number of Seats Abreast> ");
+            newCabinClass.setNumOfSeatsAbreast(scanner.nextInt());
+            scanner.nextLine();
+            System.out.print("Enter Seating Configuration per Column> ");
+            newCabinClass.setSeatConfiguration(scanner.nextLine().trim());
+            
+            // TODO - Insert Bean Validation try-catch block here
+            
+            newAircraftConfiguration.getCabinClasses().add(newCabinClass);
+            
+        }
+        
+        try
+        {
+            newAircraftConfiguration = aircraftConfigurationSessionBeanRemote.createNewAircraftConfiguration(newAircraftConfiguration);
+            
+            System.out.println("New Aircraft Configuration created successfully!: " + newAircraftConfiguration.getAircraftConfigurationId() + "\n");
+        }
+        catch(AircraftTypeNotFoundException ex) 
+        {
+            System.out.println("An error has occurred while creating the new aircraft configuration!: Invalid Aircraft Configuration Name\n");
+        }
+        catch(AircraftTypeMaxSeatCapacityExceededException ex)
+        {
+            System.out.println("An error has occurred while creating the new aircraft configuration!: " + ex.getMessage() + "\n");
+        }
+        catch(CreateNewAircraftConfigurationException ex)
+        {
+            System.out.println(ex.getMessage() + "\n");
+        }
+        
     }
     
     public void doViewAllAircraftConfigurations() {
-        System.out.println("Viewing all aircraft configurations");
+        Scanner scanner = new Scanner(System.in);
+        
+        System.out.println("*** Flight Reservation System :: Fleet Manager :: View All Aircraft Configurations ***\n");
+        
+        List<AircraftConfiguration> aircraftConfigurations = aircraftConfigurationSessionBeanRemote.retrieveAllAircraftConfigurations();
+        System.out.printf("%25s%20s%30s%25s\n", "Aircraft Configuration ID", "Aircraft Type Name", "Configuration Name", "Number of Cabin Class");
+        
+        for (AircraftConfiguration aircraftConfiguration : aircraftConfigurations) 
+        {
+            System.out.printf("%25s%20s%30s%25s\n", aircraftConfiguration.getAircraftConfigurationId().toString(), aircraftConfiguration.getAircraftType().getName(), 
+                    aircraftConfiguration.getName(), aircraftConfiguration.getNumOfCabinClass());
+        }
+        
+        System.out.print("Press any key to continue...> ");
+        scanner.nextLine();
     }
     
     public void doViewAircraftConfigurationDetails() {
-        System.out.println("Viewing a specific aircraft configuration detail");
+        Scanner scanner = new Scanner(System.in);
+        Integer response = 0;
+        
+        System.out.println("*** Flight Reservation System :: Fleet Manager :: View Aircraft Configuration Details ***\n");
+        System.out.print("Enter Aircraft Configuration ID> ");
+        Long aircraftConfigurationId = scanner.nextLong();
+        
+        try
+        {
+            AircraftConfiguration aircraftConfiguration = aircraftConfigurationSessionBeanRemote.retrieveAircraftConfigurationByAircraftConfigurationId(aircraftConfigurationId);  
+            System.out.printf("%25s%20s%30s%25s\n", "Aircraft Configuration ID", "Aircraft Type Name", "Configuration Name", "Number of Cabin Class");
+            System.out.printf("%25s%20s%30s%25s\n", aircraftConfiguration.getAircraftConfigurationId().toString(), aircraftConfiguration.getAircraftType().getName(), 
+                    aircraftConfiguration.getName(), aircraftConfiguration.getNumOfCabinClass());
+            
+            System.out.printf("%16s%22s%18s%30s%35s\n", "Cabin Class Type", "Number of Aisles", "Number of Rows", "Number of Seats Abreast", "Seat Configuration Per Column");
+            
+            for (CabinClass cabinClass : aircraftConfiguration.getCabinClasses()) 
+            {
+                System.out.printf("%16s%22s%18s%30s%35s\n", cabinClass.getCabinClassType().toString(), cabinClass.getNumOfAisles(), cabinClass.getNumOfRows(), 
+                        cabinClass.getNumOfSeatsAbreast(), cabinClass.getSeatConfiguration());
+            }
+        }
+        catch(AircraftConfigurationNotFoundException ex)
+        {
+            System.out.println("An error has occurred while retrieving Aircraft Configuration: " + ex.getMessage() + "\n");
+        }
+        
     }
 }
