@@ -7,9 +7,12 @@ package entity;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import util.enumeration.CabinClassType;
 
 /**
  *
@@ -22,6 +25,9 @@ public class CabinClass implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long cabinClassId;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CabinClassType cabinClassType;
     @Column(nullable = false)
     private Integer numOfAisles;
     @Column(nullable = false)
@@ -125,6 +131,20 @@ public class CabinClass implements Serializable {
      */
     public void setSeatConfiguration(String seatConfiguration) {
         this.seatConfiguration = seatConfiguration;
+    }
+
+    /**
+     * @return the cabinClassType
+     */
+    public CabinClassType getCabinClassType() {
+        return cabinClassType;
+    }
+
+    /**
+     * @param cabinClassType the cabinClassType to set
+     */
+    public void setCabinClassType(CabinClassType cabinClassType) {
+        this.cabinClassType = cabinClassType;
     }
     
 }

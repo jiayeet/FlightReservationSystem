@@ -4,6 +4,7 @@
  */
 package flightreservationsystemclient;
 
+import ejb.session.stateless.AircraftConfigurationSessionBeanRemote;
 import ejb.session.stateless.EmployeeSessionBeanRemote;
 import entity.Employee;
 import java.util.Scanner;
@@ -17,17 +18,21 @@ import util.exception.InvalidLoginCredentials;
 public class MainApp {
 
     private EmployeeSessionBeanRemote employeeSessionBeanRemote;
-    private Employee currentEmployee;
+    private AircraftConfigurationSessionBeanRemote aircraftConfigurationSessionBeanRemote;
+    
     private SalesManagerModule salesManagerModule;
     private FleetManagerModule fleetManagerModule;
     private ScheduleManagerModule scheduleManagerModule;
     private RoutePlannerModule routePlannerModule;
 
+    private Employee currentEmployee;
+    
     public MainApp() {
     }
     
-    public MainApp(EmployeeSessionBeanRemote employeeSessionBeanRemote) {
+    public MainApp(EmployeeSessionBeanRemote employeeSessionBeanRemote, AircraftConfigurationSessionBeanRemote aircraftConfigurationSessionBeanRemote) {
         this.employeeSessionBeanRemote = employeeSessionBeanRemote;
+        this.aircraftConfigurationSessionBeanRemote = aircraftConfigurationSessionBeanRemote;
     }
     
     public void runApp()
@@ -51,7 +56,7 @@ public class MainApp {
                         doLogin();
                         System.out.println("Login successful!\n");
 
-                        fleetManagerModule = new FleetManagerModule();
+                        fleetManagerModule = new FleetManagerModule(aircraftConfigurationSessionBeanRemote);
                         salesManagerModule = new SalesManagerModule();
                         routePlannerModule = new RoutePlannerModule();
                         scheduleManagerModule = new ScheduleManagerModule();

@@ -8,6 +8,9 @@ import entity.AircraftConfiguration;
 import java.util.List;
 import javax.ejb.Remote;
 import util.exception.AircraftConfigurationNotFoundException;
+import util.exception.AircraftTypeMaxSeatCapacityExceededException;
+import util.exception.AircraftTypeNotFoundException;
+import util.exception.CreateNewAircraftConfigurationException;
 
 /**
  *
@@ -20,4 +23,5 @@ public interface AircraftConfigurationSessionBeanRemote {
     
     public AircraftConfiguration retrieveAircraftConfigurationByAircraftConfigurationId(Long aircraftConfigurationId) throws AircraftConfigurationNotFoundException;
     
+    public AircraftConfiguration createNewAircraftConfiguration(AircraftConfiguration newAircraftConfiguration) throws AircraftTypeNotFoundException, AircraftTypeMaxSeatCapacityExceededException, CreateNewAircraftConfigurationException;
 }
