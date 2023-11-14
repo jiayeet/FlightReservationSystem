@@ -8,8 +8,11 @@ import entity.Airport;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import util.exception.AirportNotFoundException;
 
 /**
  *
@@ -35,5 +38,36 @@ public class AirportSessionBean implements AirportSessionBeanRemote, AirportSess
     {
         Query query = em.createQuery("SELECT a FROM Airport a");
         return query.getResultList();
+    }
+    
+    @Override
+    public Airport retrieveAirportByAirportName(String airportName) throws AirportNotFoundException
+    {
+        Query query = em.createQuery("SELECT a FROM Airport a WHERE a.airportName = :inAirportName");
+        query.setParameter("inAirportName", airportName);
+        
+        try
+        {
+            return (Airport)query.getSingleResult();
+        }
+        catch(NoResultException | NonUniqueResultException ex)
+        {
+            throw new AirportNotFoundException("Airport name " + airportName + " does not exist!");
+        }
+    }
+    
+    @Override
+    public Airport retrieveAirportByAirportId(Long airportId) throws AirportNotFoundException
+    {
+        Airport airport = em.find(Airport.class, airportId);
+        
+        if(airport != null)
+        {
+            return airport;
+        }
+        else
+        {
+            throw new AirportNotFoundException("Airport ID " + airport + " does not exist");
+        }
     }
 }

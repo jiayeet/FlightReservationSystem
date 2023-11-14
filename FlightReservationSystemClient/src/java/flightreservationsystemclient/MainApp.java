@@ -4,7 +4,9 @@
  */
 package flightreservationsystemclient;
 
+import ejb.session.stateless.AirportSessionBeanRemote;
 import ejb.session.stateless.EmployeeSessionBeanRemote;
+import ejb.session.stateless.FlightRouteSessionBeanRemote;
 import entity.Employee;
 import java.util.Scanner;
 import util.enumeration.EmployeeUserRoleEnum;
@@ -17,6 +19,8 @@ import util.exception.InvalidLoginCredentials;
 public class MainApp {
 
     private EmployeeSessionBeanRemote employeeSessionBeanRemote;
+    private AirportSessionBeanRemote airportSessionBeanRemote;
+    private FlightRouteSessionBeanRemote flightRouteSessionBeanRemote;
     private Employee currentEmployee;
     private SalesManagerModule salesManagerModule;
     private FleetManagerModule fleetManagerModule;
@@ -26,8 +30,10 @@ public class MainApp {
     public MainApp() {
     }
     
-    public MainApp(EmployeeSessionBeanRemote employeeSessionBeanRemote) {
+    public MainApp(EmployeeSessionBeanRemote employeeSessionBeanRemote, AirportSessionBeanRemote airportSessionBeanRemote, FlightRouteSessionBeanRemote flightRouteSessionBeanRemote) {
         this.employeeSessionBeanRemote = employeeSessionBeanRemote;
+        this.airportSessionBeanRemote = airportSessionBeanRemote;
+        this.flightRouteSessionBeanRemote = flightRouteSessionBeanRemote;
     }
     
     public void runApp()
@@ -53,7 +59,7 @@ public class MainApp {
 
                         fleetManagerModule = new FleetManagerModule();
                         salesManagerModule = new SalesManagerModule();
-                        routePlannerModule = new RoutePlannerModule();
+                        routePlannerModule = new RoutePlannerModule(airportSessionBeanRemote, flightRouteSessionBeanRemote);
                         scheduleManagerModule = new ScheduleManagerModule();
                         
                         menuMain();
@@ -141,7 +147,10 @@ public class MainApp {
             } else {
                 System.out.println("There is no such user role!");
             }
-
+            if (response == 5) {
+            break;
+            }
         }
+        
     }
 }

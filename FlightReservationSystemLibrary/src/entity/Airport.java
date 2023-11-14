@@ -5,11 +5,14 @@
 package entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -26,7 +29,7 @@ public class Airport implements Serializable {
     private Long airportId;
     @Column(nullable = false, length = 32)
     @NotNull
-    @Size(min = 7, max = 32)
+    @Size(min = 1, max = 32)
     private String iataAirportCode;
     @Column(nullable = false, length = 32)
     @NotNull
@@ -44,8 +47,15 @@ public class Airport implements Serializable {
     @NotNull
     @Size(min = 1, max = 32)
     private String country;
+    
+    @OneToMany(mappedBy = "airportOrigin")
+    private List<FlightRoute> originFlightRoutes;
+    @OneToMany(mappedBy = "airportDestination")
+    private List<FlightRoute> destinationFlightRoutes;
 
     public Airport() {
+        originFlightRoutes = new ArrayList<>();
+        destinationFlightRoutes = new ArrayList<>();
     }
 
     public Airport(String iataAirportCode, String airportName, String city, String state, String country) {
@@ -55,6 +65,35 @@ public class Airport implements Serializable {
         this.state = state;
         this.country = country;
     }
+    
+    /**
+     * @return the originFlightRoutes
+     */
+    public List<FlightRoute> getOriginFlightRoutes() {
+        return originFlightRoutes;
+    }
+
+    /**
+     * @param originFlightRoutes the originFlightRoutes to set
+     */
+    public void setOriginFlightRoutes(List<FlightRoute> originFlightRoutes) {
+        this.originFlightRoutes = originFlightRoutes;
+    }
+
+    /**
+     * @return the destinationFlightRoutes
+     */
+    public List<FlightRoute> getDestinationFlightRoutes() {
+        return destinationFlightRoutes;
+    }
+
+    /**
+     * @param destinationFlightRoutes the destinationFlightRoutes to set
+     */
+    public void setDestinationFlightRoutes(List<FlightRoute> destinationFlightRoutes) {
+        this.destinationFlightRoutes = destinationFlightRoutes;
+    }
+
     
     
     /**
