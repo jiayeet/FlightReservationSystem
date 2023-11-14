@@ -81,7 +81,7 @@ public class AircraftConfigurationSessionBean implements AircraftConfigurationSe
     @Override
     public List<AircraftConfiguration> retrieveAllAircraftConfigurations() 
     {
-        Query query = em.createQuery("SELECT ac FROM AircraftConfiguration ac, IN (ac.aircrafttype) act ORDER BY act.name ASC, ac.name ASC");
+        Query query = em.createQuery("SELECT ac FROM AircraftConfiguration ac JOIN ac.aircraftType act ORDER BY act.name ASC, ac.name ASC");
         
         return query.getResultList();
     }
@@ -100,7 +100,7 @@ public class AircraftConfigurationSessionBean implements AircraftConfigurationSe
         }
         else 
         {
-            throw new AircraftConfigurationNotFoundException("Aircraft Configuration ID " + aircraftConfigurationId + "does not exist!");
+            throw new AircraftConfigurationNotFoundException("Aircraft Configuration ID " + aircraftConfigurationId + " does not exist!");
         }
     }
     
