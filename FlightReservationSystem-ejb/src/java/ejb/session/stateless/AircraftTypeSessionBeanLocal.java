@@ -6,6 +6,7 @@ package ejb.session.stateless;
 
 import entity.AircraftType;
 import javax.ejb.Local;
+import util.exception.AircraftTypeNotFoundException;
 
 /**
  *
@@ -15,5 +16,7 @@ import javax.ejb.Local;
 public interface AircraftTypeSessionBeanLocal {
 
     public Long createNewAircraft(AircraftType newAircraftType);
+
+    public AircraftType retrieveAircraftTypeByAircraftTypeName(String aircraftTypeName) throws AircraftTypeNotFoundException;
     
 }

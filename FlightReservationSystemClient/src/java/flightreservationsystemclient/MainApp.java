@@ -5,6 +5,7 @@
 package flightreservationsystemclient;
 
 import ejb.session.stateless.AirportSessionBeanRemote;
+import ejb.session.stateless.AircraftConfigurationSessionBeanRemote;
 import ejb.session.stateless.EmployeeSessionBeanRemote;
 import ejb.session.stateless.FlightRouteSessionBeanRemote;
 import entity.Employee;
@@ -21,19 +22,23 @@ public class MainApp {
     private EmployeeSessionBeanRemote employeeSessionBeanRemote;
     private AirportSessionBeanRemote airportSessionBeanRemote;
     private FlightRouteSessionBeanRemote flightRouteSessionBeanRemote;
-    private Employee currentEmployee;
+    private AircraftConfigurationSessionBeanRemote aircraftConfigurationSessionBeanRemote;
+    
     private SalesManagerModule salesManagerModule;
     private FleetManagerModule fleetManagerModule;
     private ScheduleManagerModule scheduleManagerModule;
     private RoutePlannerModule routePlannerModule;
 
+    private Employee currentEmployee;
+    
     public MainApp() {
     }
     
-    public MainApp(EmployeeSessionBeanRemote employeeSessionBeanRemote, AirportSessionBeanRemote airportSessionBeanRemote, FlightRouteSessionBeanRemote flightRouteSessionBeanRemote) {
+    public MainApp(EmployeeSessionBeanRemote employeeSessionBeanRemote, AirportSessionBeanRemote airportSessionBeanRemote, AirportConfigurationSessionBeanRemote airportConfigurationSessionBeanRemote, FlightRouteSessionBeanRemote flightRouteSessionBeanRemote) {
         this.employeeSessionBeanRemote = employeeSessionBeanRemote;
         this.airportSessionBeanRemote = airportSessionBeanRemote;
         this.flightRouteSessionBeanRemote = flightRouteSessionBeanRemote;
+        this.aircraftConfigurationSessionBeanRemote = aircraftConfigurationSessionBeanRemote;
     }
     
     public void runApp()
@@ -57,7 +62,7 @@ public class MainApp {
                         doLogin();
                         System.out.println("Login successful!\n");
 
-                        fleetManagerModule = new FleetManagerModule();
+                        fleetManagerModule = new FleetManagerModule(aircraftConfigurationSessionBeanRemote);
                         salesManagerModule = new SalesManagerModule();
                         routePlannerModule = new RoutePlannerModule(airportSessionBeanRemote, flightRouteSessionBeanRemote);
                         scheduleManagerModule = new ScheduleManagerModule();
