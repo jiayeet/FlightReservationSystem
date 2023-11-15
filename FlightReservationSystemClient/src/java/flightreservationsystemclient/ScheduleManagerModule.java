@@ -4,12 +4,17 @@
  */
 package flightreservationsystemclient;
 
+import ejb.session.stateless.AircraftConfigurationSessionBeanRemote;
 import ejb.session.stateless.FlightRouteSessionBeanRemote;
+import ejb.session.stateless.FlightSchedulePlanSessionBeanRemote;
+import ejb.session.stateless.FlightScheduleSessionBeanRemote;
 import ejb.session.stateless.FlightSessionBeanRemote;
+import entity.AircraftConfiguration;
 import entity.Flight;
 import entity.FlightRoute;
 import java.util.List;
 import java.util.Scanner;
+import util.exception.AircraftConfigurationNotFoundException;
 import util.exception.DeleteFlightException;
 import util.exception.FlightExistException;
 import util.exception.FlightNotFoundException;
@@ -25,15 +30,18 @@ public class ScheduleManagerModule {
     
     private FlightRouteSessionBeanRemote flightRouteSessionBeanRemote;
     private FlightSessionBeanRemote flightSessionBeanRemote;
-    //private AircraftConfigurationSessionBeanRemote aircraftConfigurationSessionBeanRemote;
+    private AircraftConfigurationSessionBeanRemote aircraftConfigurationSessionBeanRemote;
+    private FlightScheduleSessionBeanRemote flightScheduleSessionBeanRemote;
+    private FlightSchedulePlanSessionBeanRemote flightSchedulePlanSessionBeanRemote;
     
-    public ScheduleManagerModule() {
-        
-    }
     
-    public ScheduleManagerModule(FlightRouteSessionBeanRemote flightRouteSessionBeanRemote, FlightSessionBeanRemote flightSessionBeanRemote) {
+    public ScheduleManagerModule(FlightRouteSessionBeanRemote flightRouteSessionBeanRemote, FlightSessionBeanRemote flightSessionBeanRemote, AircraftConfigurationSessionBeanRemote aircraftConfigurationSessionBeanRemote,
+                                 FlightScheduleSessionBeanRemote flightScheduleSessionBeanRemote, FlightSchedulePlanSessionBeanRemote flightSchedulePlanSessionBeanRemote) {
         this.flightRouteSessionBeanRemote = flightRouteSessionBeanRemote;
         this.flightSessionBeanRemote = flightSessionBeanRemote;
+        this.aircraftConfigurationSessionBeanRemote = aircraftConfigurationSessionBeanRemote;
+        this.flightScheduleSessionBeanRemote = flightScheduleSessionBeanRemote;
+        this.flightSchedulePlanSessionBeanRemote = flightSchedulePlanSessionBeanRemote;
     }
 
     public void scheduleManagerMenu() {
@@ -107,12 +115,12 @@ public class ScheduleManagerModule {
         System.out.println("*** Flight Management System :: Schedule Manager :: Create New Flight ***\n");
         
         try {
-        System.out.print("Enter Aircraft Configuration Name> ");
-        //AircraftConfiguration aircraftConfig = aircraftConfigurationSessionBeanRemote.retrieveAirportByAirportName(scanner.nextLine().trim());
-        //newFlight.setAircraftConfiguration(aircraftConfig);
+        System.out.print("Enter Aircraft Configuration Id> ");
+        AircraftConfiguration aircraftConfig = aircraftConfigurationSessionBeanRemote.retrieveAircraftConfigurationByAircraftConfigurationId(Long.valueOf(scanner.nextLine().trim()));
+        newFlight.setAircraftConfiguration(aircraftConfig);
         System.out.print("Enter Flight Route Id> ");
         FlightRoute flightRoute = flightRouteSessionBeanRemote.retrieveFlightRouteByFlightRouteId(scanner.nextLong());
-        //newFlight.setFlightRoute(flightRoute);
+        newFlight.setFlightRoute(flightRoute);
         
         //add in schedule plan
     
@@ -120,13 +128,16 @@ public class ScheduleManagerModule {
         System.out.println("New flight created successfully!: " + newFlightId + "\n");
         }
         catch (FlightRouteNotFoundException ex) {
-            System.out.println("An error has occurred while creating the new flight route: The airport does not exist!\n");
+            System.out.println("An error has occurred: The flight route is not found!\n");
+        }
+        catch (AircraftConfigurationNotFoundException ex) {
+            System.out.println("An error has occurred: The aircraft configuration does not exist!\n");
         }
         catch (FlightExistException ex) {
-            System.out.println("An error has occurred while creating the new flight route: The airport does not exist!\n");
+            System.out.println("An error has occurred: The flight already exists!\n");
         } 
         catch (GeneralException ex) {
-            System.out.println("An unknown error has occurred while registering the new customer!: " + ex.getMessage() + "\n");
+            System.out.println("An unknown error has occurred while creating the flight!: " + ex.getMessage() + "\n");
         }
     }
     
@@ -158,11 +169,15 @@ public class ScheduleManagerModule {
         try
         {
             Flight flight = flightSessionBeanRemote.retrieveFlightByFlightId(flightId);
-            System.out.printf("%8s%20s%20s%15s%20s%20s\n", "Flight ID", "AITA Origin Code", "AITA Destination Code", "Access Right", "Username", "Password");
-            System.out.printf("%8s%20s%20s\n", flight.getFlightId().toString(), flight.getFlightRoute().getAirportOrigin().getIataAirportCode(), flight.getFlightRoute().getAirportDestination().getIataAirportCode());         
+            System.out.printf("%8s%20s%20s%15s%20s%20s\n", "Flight ID", "AITA Origin Code", "AITA Destination Code");
+            System.out.printf("%8s%20s%20s\n", flight.getFlightId().toString(), flight.getFlightRoute().getAirportOrigin().getIataAirportCode(), flight.getFlightRoute().getAirportDestination().getIataAirportCode());
+            System.out.printf("%8s%20s%20s%15s%20s%20s\n", "Cabin Classes", "Number of Available Seats");
+            for (int i = 0; i < flight.getAircraftConfiguration().getCabinClasses().size(); i++) {
+                System.out.printf("%20s%20s\n", flight.getAircraftConfiguration().getCabinClasses().get(i).getCabinClassType().toString(), flight.getAircraftConfiguration().getCabinClasses().get(i).calculateTotalSeats());
+            }
             System.out.println("------------------------");
-            System.out.println("1: Update Staff");
-            System.out.println("2: Delete Staff");
+            System.out.println("1: Update Flight");
+            System.out.println("2: Delete Flight");
             System.out.println("3: Back\n");
             System.out.print("> ");
             response = scanner.nextInt();
@@ -178,7 +193,7 @@ public class ScheduleManagerModule {
         }
         catch(FlightNotFoundException ex)
         {
-            System.out.println("An error has occurred while retrieving staff: " + ex.getMessage() + "\n");
+            System.out.println("An error has occurred while retrieving flight: " + ex.getMessage() + "\n");
         }
     }
     
@@ -199,8 +214,8 @@ public class ScheduleManagerModule {
             System.out.print("Enter Aircraft Configuration ID (blank if no change)> ");
             input = scanner.nextLine().trim();
             if (input.length() > 0) {
-                //AircraftConfiguration newAircraftConfiguration = flightRouteSessionBeanRemote.retrieveAircraftConfigurationByAircraftConfigurationId(Long.valueOf(input));
-                //flight.setAircraftConfiguration(newAircraftConfiguration);
+                AircraftConfiguration newAircraftConfiguration = aircraftConfigurationSessionBeanRemote.retrieveAircraftConfigurationByAircraftConfigurationId(Long.valueOf(input));
+                flight.setAircraftConfiguration(newAircraftConfiguration);
             }
 
             System.out.print("Enter Flight Schedule Plan ID (blank if no change)> ");
@@ -216,10 +231,10 @@ public class ScheduleManagerModule {
         catch (FlightRouteNotFoundException ex) {
             System.out.println("An error has occurred: " + ex.getMessage() + "\n");
         }
-        /*catch (AircraftConfigurationNotFoundException ex) {
+        catch (AircraftConfigurationNotFoundException ex) {
             System.out.println("An error has occurred: " + ex.getMessage() + "\n");
         }
-        catch (FlightSchedulePlanNotFoundException ex) {
+        /*catch (FlightSchedulePlanNotFoundException ex) {
             System.out.println("An error has occurred: " + ex.getMessage() + "\n");
         }*/
         catch (FlightNotFoundException | UpdateFlightException ex) {

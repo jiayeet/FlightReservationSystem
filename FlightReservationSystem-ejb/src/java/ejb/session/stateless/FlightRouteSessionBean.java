@@ -37,7 +37,7 @@ public class FlightRouteSessionBean implements FlightRouteSessionBeanRemote, Fli
         try
         {   
             if (!isOriginDestinationUnique(flightRoute)) {
-            throw new FlightRouteExistException("Flight Route with the same origin and destination airports already exists");
+                throw new FlightRouteExistException("Flight Route with the same origin and destination airports already exists");
             }
             
             em.persist(flightRoute);

@@ -42,7 +42,9 @@ public class CabinClass implements Serializable {
     public CabinClass() {
     }
     
-
+    public int calculateTotalSeats() {
+        return numOfSeatsAbreast * numOfRows;
+    }
     
     public Long getCabinClassId() {
         return cabinClassId;

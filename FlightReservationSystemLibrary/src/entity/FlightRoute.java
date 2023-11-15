@@ -31,12 +31,12 @@ public class FlightRoute implements Serializable {
     @ManyToOne
     @JoinColumn(name = "originAirportId")
     private Airport airportOrigin;
+    
     @ManyToOne
     @JoinColumn(name = "destinationAirportId")
     private Airport airportDestination;
     
-    //Remember to encapsulate
-    @OneToMany(mappedBy = "flightroutes")
+    @OneToMany(mappedBy = "flightRoute")
     private List<Flight> flights;
     
     public FlightRoute() {

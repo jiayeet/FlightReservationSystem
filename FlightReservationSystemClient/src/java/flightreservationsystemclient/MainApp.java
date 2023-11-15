@@ -8,6 +8,9 @@ import ejb.session.stateless.AirportSessionBeanRemote;
 import ejb.session.stateless.AircraftConfigurationSessionBeanRemote;
 import ejb.session.stateless.EmployeeSessionBeanRemote;
 import ejb.session.stateless.FlightRouteSessionBeanRemote;
+import ejb.session.stateless.FlightSchedulePlanSessionBeanRemote;
+import ejb.session.stateless.FlightScheduleSessionBeanRemote;
+import ejb.session.stateless.FlightSessionBeanRemote;
 import entity.Employee;
 import java.util.Scanner;
 import util.enumeration.EmployeeUserRoleEnum;
@@ -23,6 +26,9 @@ public class MainApp {
     private AirportSessionBeanRemote airportSessionBeanRemote;
     private FlightRouteSessionBeanRemote flightRouteSessionBeanRemote;
     private AircraftConfigurationSessionBeanRemote aircraftConfigurationSessionBeanRemote;
+    private FlightSessionBeanRemote flightSessionBeanRemote;
+    private FlightSchedulePlanSessionBeanRemote flightSchedulePlanSessionBeanRemote;
+    private FlightScheduleSessionBeanRemote flightScheduleSessionBeanRemote;
     
     private SalesManagerModule salesManagerModule;
     private FleetManagerModule fleetManagerModule;
@@ -34,11 +40,14 @@ public class MainApp {
     public MainApp() {
     }
     
-    public MainApp(EmployeeSessionBeanRemote employeeSessionBeanRemote, AirportSessionBeanRemote airportSessionBeanRemote, AirportConfigurationSessionBeanRemote airportConfigurationSessionBeanRemote, FlightRouteSessionBeanRemote flightRouteSessionBeanRemote) {
+    public MainApp(EmployeeSessionBeanRemote employeeSessionBeanRemote, AirportSessionBeanRemote airportSessionBeanRemote, AircraftConfigurationSessionBeanRemote airportConfigurationSessionBeanRemote, FlightRouteSessionBeanRemote flightRouteSessionBeanRemote, FlightSessionBeanRemote flightSessionBeanRemote, FlightSchedulePlanSessionBeanRemote flightSchedulePlanSessionBeanRemote, FlightScheduleSessionBeanRemote flightScheduleSessionBeanRemote) {
         this.employeeSessionBeanRemote = employeeSessionBeanRemote;
         this.airportSessionBeanRemote = airportSessionBeanRemote;
         this.flightRouteSessionBeanRemote = flightRouteSessionBeanRemote;
         this.aircraftConfigurationSessionBeanRemote = aircraftConfigurationSessionBeanRemote;
+        this.flightSessionBeanRemote = flightSessionBeanRemote;
+        this.flightSchedulePlanSessionBeanRemote = flightSchedulePlanSessionBeanRemote;
+        this.flightScheduleSessionBeanRemote = flightScheduleSessionBeanRemote;
     }
     
     public void runApp()
@@ -65,7 +74,7 @@ public class MainApp {
                         fleetManagerModule = new FleetManagerModule(aircraftConfigurationSessionBeanRemote);
                         salesManagerModule = new SalesManagerModule();
                         routePlannerModule = new RoutePlannerModule(airportSessionBeanRemote, flightRouteSessionBeanRemote);
-                        scheduleManagerModule = new ScheduleManagerModule();
+                        scheduleManagerModule = new ScheduleManagerModule(flightRouteSessionBeanRemote, flightSessionBeanRemote, aircraftConfigurationSessionBeanRemote, flightScheduleSessionBeanRemote, flightSchedulePlanSessionBeanRemote);
                         
                         menuMain();
                     } catch (InvalidLoginCredentials ex) {
@@ -97,7 +106,6 @@ public class MainApp {
         password = scanner.nextLine().trim();
 
         if (username.length() > 0 && password.length() > 0) {
-            System.out.println("testing to see if the method calling makes sense !");
             currentEmployee = employeeSessionBeanRemote.employeeLogin(username, password);
         } else {
             throw new InvalidLoginCredentials("Missing login credential!");

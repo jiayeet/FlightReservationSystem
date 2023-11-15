@@ -136,11 +136,11 @@ public class FlightSessionBean implements FlightSessionBeanRemote, FlightSession
     {
         Flight flightToRemove = retrieveFlightByFlightId(flightId);
         
-        /*if(flightToRemove.getAircraftConfiguration() == null && flightToRemove.getFlightRoute() == null && flightToRemove.getFlightSchedulePlan() == null)
+        if(flightToRemove.getAircraftConfiguration() == null && flightToRemove.getFlightRoute() == null && flightToRemove.getFlightSchedulePlans().isEmpty())
         {
             em.remove(flightToRemove);
         }
-        else if(flightToRemove.getAircraftConfiguration() == null || flightToRemove.getFlightRoute() == null || flightToRemove.getFlightSchedulePlan() == null)
+        else if(flightToRemove.getAircraftConfiguration() == null || flightToRemove.getFlightRoute() == null || flightToRemove.getFlightSchedulePlans().isEmpty())
         {
             flightToRemove.setEnabled(Boolean.FALSE);
             throw new DeleteFlightException("Flight ID " + flightId + " has been disabled due to existing associations.");
@@ -148,6 +148,6 @@ public class FlightSessionBean implements FlightSessionBeanRemote, FlightSession
         else
         {
             throw new DeleteFlightException("Flight ID " + flightId + " is associated with existing aircraft configurations, flight routes and flight schedule plans and cannot be deleted!");
-        }*/
+        }
     }
 }

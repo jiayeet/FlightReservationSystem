@@ -5,12 +5,16 @@
 package entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
 /**
  *
@@ -18,7 +22,7 @@ import javax.persistence.ManyToOne;
  */
 @Entity
 public class Flight implements Serializable {
-
+    
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,18 +30,50 @@ public class Flight implements Serializable {
     private String flightNumber;
     private Boolean enabled;
     
-    //Remember to encapsulate the getters later
-    /*@OneToOne
+    @OneToOne
     @JoinColumn(name = "aircraftconfig_id")
-    private AircraftConfiguration aircraftConfiguration;*/
+    private AircraftConfiguration aircraftConfiguration;
     
     @ManyToOne
     @JoinColumn(name = "flightRouteId")
     private FlightRoute flightRoute;
     
-    /*@OneToMany(mappedBy = "flights")
-    private List<FlightSchedule> flightSchedules;
-    */
+    @OneToMany(mappedBy = "flight")
+    private List<FlightSchedulePlan> flightSchedulePlans;
+    
+    public Flight() {
+        flightSchedulePlans = new ArrayList<>();
+    }
+    
+
+    /**
+     * @return the flightSchedulePlans
+     */
+    public List<FlightSchedulePlan> getFlightSchedulePlans() {
+        return flightSchedulePlans;
+    }
+
+    /**
+     * @param flightSchedulePlans the flightSchedulePlans to set
+     */
+    public void setFlightSchedulePlans(List<FlightSchedulePlan> flightSchedulePlans) {
+        this.flightSchedulePlans = flightSchedulePlans;
+    }
+    
+    
+    /**
+     * @return the aircraftConfiguration
+     */
+    public AircraftConfiguration getAircraftConfiguration() {
+        return aircraftConfiguration;
+    }
+
+    /**
+     * @param aircraftConfiguration the aircraftConfiguration to set
+     */
+    public void setAircraftConfiguration(AircraftConfiguration aircraftConfiguration) {
+        this.aircraftConfiguration = aircraftConfiguration;
+    }
     
     /**
      * @return the flightRoute
@@ -53,8 +89,7 @@ public class Flight implements Serializable {
         this.flightRoute = flightRoute;
     }
 
-    public Flight() {
-    }
+
 
     
     
