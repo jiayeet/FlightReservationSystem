@@ -23,7 +23,7 @@ public class FlightSchedule implements Serializable {
     //Remember to encapsulate classes
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long flightScheduleId;
     private Date departureDateTime;
     //private estimatedFlightDuration Calendar/Date;

@@ -79,6 +79,7 @@ public class FlightSessionBean implements FlightSessionBeanRemote, FlightSession
         
         if(flight != null)
         {
+            flight.getAircraftConfiguration().getCabinClasses().size();
             return flight;
         }
         else
@@ -116,7 +117,7 @@ public class FlightSessionBean implements FlightSessionBeanRemote, FlightSession
             {
                 flightToUpdate.setFlightNumber(flight.getFlightNumber());
                 flightToUpdate.setEnabled(flight.getEnabled());
-                //flightToUpdate.setAircraftConfiguration(flight.getAircraftConfiguration());
+                flightToUpdate.setAircraftConfiguration(flight.getAircraftConfiguration());
                 flightToUpdate.setFlightRoute(flight.getFlightRoute());
                 //flightToUpdate.setFlightSchedules(flight.getFlightSchedules());
             }

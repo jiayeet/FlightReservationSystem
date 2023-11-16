@@ -12,6 +12,7 @@ import ejb.session.stateless.FlightSessionBeanRemote;
 import entity.AircraftConfiguration;
 import entity.Flight;
 import entity.FlightRoute;
+import entity.FlightSchedulePlan;
 import java.util.List;
 import java.util.Scanner;
 import util.exception.AircraftConfigurationNotFoundException;
@@ -19,6 +20,7 @@ import util.exception.DeleteFlightException;
 import util.exception.FlightExistException;
 import util.exception.FlightNotFoundException;
 import util.exception.FlightRouteNotFoundException;
+import util.exception.FlightSchedulePlanNotFoundException;
 import util.exception.GeneralException;
 import util.exception.UpdateFlightException;
 
@@ -120,9 +122,13 @@ public class ScheduleManagerModule {
         newFlight.setAircraftConfiguration(aircraftConfig);
         System.out.print("Enter Flight Route Id> ");
         FlightRoute flightRoute = flightRouteSessionBeanRemote.retrieveFlightRouteByFlightRouteId(scanner.nextLong());
+        if (flightRoute.getEnabled() == false) {
+            System.out.println("Flight route has been disabled, it will not work");
+        }
         newFlight.setFlightRoute(flightRoute);
+        newFlight.setEnabled(Boolean.FALSE);
         
-        //add in schedule plan
+        //Add in schedule plan?
     
         Long newFlightId = flightSessionBeanRemote.createNewFlight(newFlight);
         System.out.println("New flight created successfully!: " + newFlightId + "\n");
@@ -169,11 +175,11 @@ public class ScheduleManagerModule {
         try
         {
             Flight flight = flightSessionBeanRemote.retrieveFlightByFlightId(flightId);
-            System.out.printf("%8s%20s%20s%15s%20s%20s\n", "Flight ID", "AITA Origin Code", "AITA Destination Code");
+            System.out.printf("%8s%20s%20s\n", "Flight ID", "AITA Origin Code ", "AITA Destination Code");
             System.out.printf("%8s%20s%20s\n", flight.getFlightId().toString(), flight.getFlightRoute().getAirportOrigin().getIataAirportCode(), flight.getFlightRoute().getAirportDestination().getIataAirportCode());
-            System.out.printf("%8s%20s%20s%15s%20s%20s\n", "Cabin Classes", "Number of Available Seats");
+            System.out.printf("%8s%20s\n", "Cabin Classes", " Number of Available Seats");
             for (int i = 0; i < flight.getAircraftConfiguration().getCabinClasses().size(); i++) {
-                System.out.printf("%20s%20s\n", flight.getAircraftConfiguration().getCabinClasses().get(i).getCabinClassType().toString(), flight.getAircraftConfiguration().getCabinClasses().get(i).calculateTotalSeats());
+                System.out.printf("%8s%20s\n", flight.getAircraftConfiguration().getCabinClasses().get(i).getCabinClassType().toString(), flight.getAircraftConfiguration().getCabinClasses().get(i).calculateTotalSeats());
             }
             System.out.println("------------------------");
             System.out.println("1: Update Flight");
@@ -278,6 +284,52 @@ public class ScheduleManagerModule {
     }
     
     private void doViewFlightSchedulePlanDetails() {
+        Scanner scanner = new Scanner(System.in);
+        Integer response = 0;
+        
+        System.out.println("*** Flight Management System :: Schedule Manager :: View Flight Schedule Plan Details ***\n");
+        System.out.print("Enter Flight Schedule Plan ID> ");
+        Long flightSchedulePlanId = scanner.nextLong();
+        
+        try
+        {
+            FlightSchedulePlan flightSchedulePlan = flightSchedulePlanSessionBeanRemote.retrieveFlightSchedulePlanByFlightSchedulePlanId(flightSchedulePlanId);
+            
+            //TO CONFIGURE BASED ON BUSINESS RULES
+            /*System.out.printf("%8s%20s%20s%15s%20s%20s\n", "Flight ID", "AITA Origin Code", "AITA Destination Code");
+            System.out.printf("%8s%20s%20s\n", flight.getFlightId().toString(), flight.getFlightRoute().getAirportOrigin().getIataAirportCode(), flight.getFlightRoute().getAirportDestination().getIataAirportCode());
+            System.out.printf("%8s%20s%20s%15s%20s%20s\n", "Cabin Classes", "Number of Available Seats");
+            for (int i = 0; i < flight.getAircraftConfiguration().getCabinClasses().size(); i++) {
+                System.out.printf("%20s%20s\n", flight.getAircraftConfiguration().getCabinClasses().get(i).getCabinClassType().toString(), flight.getAircraftConfiguration().getCabinClasses().get(i).calculateTotalSeats());
+            }*/
+            
+            System.out.println("------------------------");
+            System.out.println("1: Update Flight Schedule Plan");
+            System.out.println("2: Delete Flight Schedule Plan");
+            System.out.println("3: Back\n");
+            System.out.print("> ");
+            response = scanner.nextInt();
+
+            if(response == 1)
+            {
+                doUpdateFlightSchedulePlan(flightSchedulePlan);
+            }
+            else if(response == 2)
+            {
+                doDeleteFlightSchedulePlan(flightSchedulePlan);
+            }
+        }
+        catch(FlightSchedulePlanNotFoundException ex)
+        {
+            System.out.println("An error has occurred while retrieving flight schedule plan: " + ex.getMessage() + "\n");
+        }
+    }
+    
+    private void doUpdateFlightSchedulePlan(FlightSchedulePlan flightSchedulePlan) {
+        
+    }
+    
+    private void doDeleteFlightSchedulePlan(FlightSchedulePlan flightSchedulePlan) {
         
     }
 }
