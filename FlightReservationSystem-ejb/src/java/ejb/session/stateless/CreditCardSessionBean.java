@@ -4,7 +4,7 @@
  */
 package ejb.session.stateless;
 
-import entity.Passenger;
+import entity.CreditCardRecord;
 import java.util.Set;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -14,13 +14,14 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import util.exception.InputDataValidationException;
+import util.exception.UnknownPersistenceException;
 
 /**
  *
  * @author 65968
  */
 @Stateless
-public class PassengerSessionBean implements PassengerSessionBeanRemote, PassengerSessionBeanLocal {
+public class CreditCardSessionBean implements CreditCardSessionBeanRemote, CreditCardSessionBeanLocal {
 
     @PersistenceContext(unitName = "FlightReservationSystem-ejbPU")
     private EntityManager em;
@@ -28,22 +29,23 @@ public class PassengerSessionBean implements PassengerSessionBeanRemote, Passeng
     private final ValidatorFactory validatorFactory;
     private final Validator validator;
     
-    public PassengerSessionBean()
+    public CreditCardSessionBean()
     {
         validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.getValidator();
     }
 
-    public Long createNewPassenger(Passenger newPassenger) throws InputDataValidationException
+    @Override
+    public Long createNewCreditCard(CreditCardRecord newCreditCard) throws InputDataValidationException
     {
-        Set<ConstraintViolation<Passenger>>constraintViolations = validator.validate(newPassenger);
+        Set<ConstraintViolation<CreditCardRecord>>constraintViolations = validator.validate(newCreditCard);
         
         if(constraintViolations.isEmpty())
         {
-            em.persist(newPassenger);
-            em.flush();
+        em.persist(newCreditCard);
+        em.flush();
         
-            return newPassenger.getPassengerId();
+        return newCreditCard.getCreditCardRecordId();
         }
         else
         {
@@ -51,7 +53,7 @@ public class PassengerSessionBean implements PassengerSessionBeanRemote, Passeng
         }
     }
     
-    private String prepareInputDataValidationErrorsMessage(Set<ConstraintViolation<Passenger>>constraintViolations)
+    private String prepareInputDataValidationErrorsMessage(Set<ConstraintViolation<CreditCardRecord>>constraintViolations)
     {
         String msg = "Input data validation error!:";
             

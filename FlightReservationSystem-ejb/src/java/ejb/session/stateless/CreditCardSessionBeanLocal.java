@@ -4,19 +4,17 @@
  */
 package ejb.session.stateless;
 
-import entity.Passenger;
+import entity.CreditCardRecord;
 import javax.ejb.Local;
 import util.exception.InputDataValidationException;
-import util.exception.PassengerPassportNumberExistException;
-import util.exception.UnknownPersistenceException;
 
 /**
  *
  * @author 65968
  */
 @Local
-public interface PassengerSessionBeanLocal {
-    
-    public Long createNewPassenger(Passenger newPassenger) throws InputDataValidationException;
+public interface CreditCardSessionBeanLocal {
+            
+    public Long createNewCreditCard(CreditCardRecord newCreditCard) throws InputDataValidationException;
     
 }

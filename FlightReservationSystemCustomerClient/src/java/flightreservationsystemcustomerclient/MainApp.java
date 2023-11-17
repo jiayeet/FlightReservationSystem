@@ -12,14 +12,19 @@ import entity.CabinClass;
 import entity.CreditCardRecord;
 import entity.Customer;
 import entity.FlightReservation;
-import entity.FlightRoute;
 import entity.FlightTicket;
 import entity.Passenger;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import util.enumeration.CabinClassType;
 import util.exception.CustomerUsernameExistException;
 import util.exception.FlightReservationNotFoundException;
+import util.exception.InputDataValidationException;
 import util.exception.InvalidLoginCredentials;
 import util.exception.UnknownPersistenceException;
 
@@ -37,8 +42,18 @@ public class MainApp {
     //private FlightSchedulePlanSessionBeanRemote flightSchedulePlanSessionBeanRemote;
     //private FlightScheduleSessionBean flightScheduleSessionBean;
     
+    private final ValidatorFactory validatorFactory;
+    private final Validator validator;
+    
+    public MainApp()
+    {
+        validatorFactory = Validation.buildDefaultValidatorFactory();
+        validator = validatorFactory.getValidator();
+    }
+    
     MainApp(CustomerSessionBeanRemote customerSessionBeanRemote, PassengerSessionBeanRemote passengerSessionBeanRemote, FlightReservationSessionBeanRemote flightReservationSessionBeanRemote,
             FlightTicketSessionBeanRemote flightTicketSessionBeanRemote /*, flightSchedulePlanSessionBeanRemote flightSchedulePlanSessionBeanRemote, FlightScheduleSessionBean flightScheduleSessionBean*/) {
+        this();
         this.customerSessionBeanRemote = customerSessionBeanRemote;
         this.currentCustomer = new Customer();
         this.passengerSessionBeanRemote = passengerSessionBeanRemote;
@@ -110,19 +125,26 @@ public class MainApp {
         System.out.print("Enter Password> ");
         newCustomer.setPassword(scanner.nextLine().trim());
         
+        Set<ConstraintViolation<Customer>>constraintViolations = validator.validate(newCustomer);
+        
         System.out.println(newCustomer.getAddress() + newCustomer.getEmail() + newCustomer.getFirstName() + newCustomer.getLastName() + newCustomer.getUsername() + newCustomer.getPassword() + newCustomer.getMobileNumber());
 
-        try {
-            Long newCustomerId = customerSessionBeanRemote.createNewCustomer(newCustomer);
-            System.out.println("New customer created successfully!: " + newCustomerId + "\n");
-        }
-        catch (CustomerUsernameExistException ex) {
-            System.out.println("An error has occurred while registering the a new customer account: The username already exists!\n");
-        } 
-        catch (UnknownPersistenceException ex) {
-            System.out.println("An unknown error has occurred while registering the new customer!: " + ex.getMessage() + "\n");
+        if (constraintViolations.isEmpty()) {
+            try {
+                Long newCustomerId = customerSessionBeanRemote.createNewCustomer(newCustomer);
+                System.out.println("New customer created successfully!: " + newCustomerId + "\n");
+            } catch (CustomerUsernameExistException ex) {
+                System.out.println("An error has occurred while registering the a new customer account: The username already exists!\n");
+            } catch (UnknownPersistenceException ex) {
+                System.out.println("An unknown error has occurred while registering the new customer!: " + ex.getMessage() + "\n");
+            } catch (InputDataValidationException ex) {
+                System.out.println(ex.getMessage() + "\n");
+            }
+        } else {
+            showInputDataValidationErrorsForCustomer(constraintViolations);
         }
     }
+    
     
     private void doCustomerLogin() throws InvalidLoginCredentials {
         Scanner scanner = new Scanner(System.in);
@@ -274,17 +296,19 @@ public class MainApp {
             System.out.print("Enter Passenger's Passport Number> ");
             passenger.setPassportNumber(scanner.nextLine().trim());
             
-            Long passengerId = passengerSessionBeanRemote.createNewPassenger(passenger);
+            //Long passengerId = passengerSessionBeanRemote.createNewPassenger(passenger);
             
             System.out.print("Enter Passenger's Seat Number> ");
             flightTicket.setSeatNumber(scanner.nextLine().trim());
             flightTicket.setPassenger(passenger);
+            
+            //Bean Validation for Passenger
+            
             //flightTicket.setCabinClass(cabinClass);
             //flightTicket.setFlightReservation(flightReservation);
             //flightTicket.setFlightSchedule(flightSchedule);
             
             //flightReservation.getFlightTickets().add(flightTicket);
-            currentCustomer.getPassengers().add(passenger);
             //TO DO - Add in the association with customer and flight ticket
         }
     }
@@ -305,6 +329,9 @@ public class MainApp {
         //newCreditCard.setExpirationDate(scanner.nextLine().trim());
         System.out.print("Enter CVV> ");
         newCreditCard.setCVV(scanner.nextLine().trim());
+        
+        //Input Data Validation for Credit Card
+        //Long creditCardId = creditCardSessionBeanRemote.createNewCreditCard();
         
         currentCustomer.setCreditCardRecord(newCreditCard);
         
@@ -351,5 +378,17 @@ public class MainApp {
         {
             System.out.println("An error has occurred while retrieving flight: " + ex.getMessage() + "\n");
         }
+    }
+    
+    private void showInputDataValidationErrorsForCustomer(Set<ConstraintViolation<Customer>>constraintViolations)
+    {
+        System.out.println("\nInput data validation error!:");
+            
+        for(ConstraintViolation constraintViolation:constraintViolations)
+        {
+            System.out.println("\t" + constraintViolation.getPropertyPath() + " - " + constraintViolation.getInvalidValue() + "; " + constraintViolation.getMessage());
+        }
+
+        System.out.println("\nPlease try again......\n");
     }
 }

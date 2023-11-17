@@ -62,30 +62,30 @@ public class Customer implements Serializable {
     @JoinColumn(name = "customerId")
     private List<FlightReservation> flightReservations;
     
-    @OneToOne
+    @OneToOne(optional = false)
     @JoinColumn(nullable = false)
     private CreditCardRecord creditCardRecord;
     
-    @OneToMany(mappedBy = "customer")
-    private List<Passenger> passengers;
+    /*@OneToMany(mappedBy = "customer")
+    private List<Passenger> passengers;*/
 
 
     public Customer() {
         flightReservations = new ArrayList<>();
-        passengers = new ArrayList();
+        //passengers = new ArrayList();
     }
     
     /**
      * @return the passengers
      */
-    public List<Passenger> getPassengers() {
+    /*public List<Passenger> getPassengers() {
         return passengers;
     }
 
     /**
      * @param passengers the passengers to set
      */
-    public void setPassengers(List<Passenger> passengers) {
+    /*public void setPassengers(List<Passenger> passengers) {
         this.passengers = passengers;
     }
     
