@@ -45,7 +45,7 @@ public class RoutePlannerModule {
             System.out.println("1: Create Flight Route");
             System.out.println("2: View All Flight Routes");
             System.out.println("3: Delete Flight Route");
-            System.out.println("4: Logout\n");
+            System.out.println("4: Back\n");
             response = 0;
             
             while(response < 1 || response > 4)

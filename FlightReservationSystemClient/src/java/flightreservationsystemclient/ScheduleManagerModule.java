@@ -120,11 +120,16 @@ public class ScheduleManagerModule {
         System.out.print("Enter Aircraft Configuration Id> ");
         AircraftConfiguration aircraftConfig = aircraftConfigurationSessionBeanRemote.retrieveAircraftConfigurationByAircraftConfigurationId(Long.valueOf(scanner.nextLine().trim()));
         newFlight.setAircraftConfiguration(aircraftConfig);
+        
         System.out.print("Enter Flight Route Id> ");
         FlightRoute flightRoute = flightRouteSessionBeanRemote.retrieveFlightRouteByFlightRouteId(scanner.nextLong());
-        if (flightRoute.getEnabled() == false) {
-            System.out.println("Flight route has been disabled, it will not work");
+        
+        while(flightRoute.getEnabled() == false) {
+            System.out.println("Flight route has been disabled, please input another flightRoute Id");
+            System.out.print("Enter Flight Route Id> ");
+            flightRoute = flightRouteSessionBeanRemote.retrieveFlightRouteByFlightRouteId(scanner.nextLong());       
         }
+        
         newFlight.setFlightRoute(flightRoute);
         newFlight.setEnabled(Boolean.FALSE);
         
@@ -175,11 +180,11 @@ public class ScheduleManagerModule {
         try
         {
             Flight flight = flightSessionBeanRemote.retrieveFlightByFlightId(flightId);
-            System.out.printf("%8s%20s%20s\n", "Flight ID", "AITA Origin Code ", "AITA Destination Code");
-            System.out.printf("%8s%20s%20s\n", flight.getFlightId().toString(), flight.getFlightRoute().getAirportOrigin().getIataAirportCode(), flight.getFlightRoute().getAirportDestination().getIataAirportCode());
-            System.out.printf("%8s%20s\n", "Cabin Classes", " Number of Available Seats");
+            System.out.printf("%-15s%-25s%-25s\n", "Flight ID", "AITA Origin Code ", "AITA Destination Code");
+            System.out.printf("%-15s%-25s%-25s\n", flight.getFlightId().toString(), flight.getFlightRoute().getAirportOrigin().getIataAirportCode(), flight.getFlightRoute().getAirportDestination().getIataAirportCode());
+            System.out.printf("%-15s%-25s\n", "Cabin Classes", "Number of Available Seats");
             for (int i = 0; i < flight.getAircraftConfiguration().getCabinClasses().size(); i++) {
-                System.out.printf("%8s%20s\n", flight.getAircraftConfiguration().getCabinClasses().get(i).getCabinClassType().toString(), flight.getAircraftConfiguration().getCabinClasses().get(i).calculateTotalSeats());
+                System.out.printf("%-15s%-25s\n", flight.getAircraftConfiguration().getCabinClasses().get(i).getCabinClassType().toString(), flight.getAircraftConfiguration().getCabinClasses().get(i).getMaxCapacity());
             }
             System.out.println("------------------------");
             System.out.println("1: Update Flight");

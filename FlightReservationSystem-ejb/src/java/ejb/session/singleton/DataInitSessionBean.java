@@ -65,7 +65,7 @@ public class DataInitSessionBean {
         airportSessionBeanLocal.createNewAirport(new Airport("HKG", "Hong Kong", "Chek Lap Kok", "Hong Kong", "China"));
         employeeSessionBeanLocal.createNewEmployee(new Employee("firstName", "lastName", "systemAdministrator", "password", EmployeeUserRoleEnum.SYSTEMADMINISTRATOR));
         partnerSessionBeanLocal.createNewPartner(new Partner("firstName", "lastName", "partner", "password"));
-        aircraftTypeSessionBeanLocal.createNewAircraft(new AircraftType("Boeing 737", 100));
+        aircraftTypeSessionBeanLocal.createNewAircraft(new AircraftType("Boeing 737", 200));
         }
         catch (EmployeeUsernameExistException | UnknownPersistenceException ex) {
             ex.printStackTrace();

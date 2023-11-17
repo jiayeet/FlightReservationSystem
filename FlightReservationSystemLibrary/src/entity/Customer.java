@@ -5,11 +5,16 @@
 package entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -52,9 +57,53 @@ public class Customer implements Serializable {
     @NotNull
     @Size(min = 6, max = 32)
     private String password;
+    
+    @OneToMany
+    @JoinColumn(name = "customerId")
+    private List<FlightReservation> flightReservations;
+    
+    @OneToOne
+    @JoinColumn(nullable = false)
+    private CreditCardRecord creditCardRecord;
+    
+    @OneToMany(mappedBy = "customer")
+    private List<Passenger> passengers;
+
 
     public Customer() {
+        flightReservations = new ArrayList<>();
+        passengers = new ArrayList();
     }
+    
+    
+    /**
+     * @return the creditCardRecord
+     */
+    public CreditCardRecord getCreditCardRecord() {
+        return creditCardRecord;
+    }
+
+    /**
+     * @param creditCardRecord the creditCardRecord to set
+     */
+    public void setCreditCardRecord(CreditCardRecord creditCardRecord) {
+        this.creditCardRecord = creditCardRecord;
+    }
+
+    /**
+     * @return the flightReservations
+     */
+    public List<FlightReservation> getFlightReservations() {
+        return flightReservations;
+    }
+
+    /**
+     * @param flightReservations the flightReservations to set
+     */
+    public void setFlightReservations(List<FlightReservation> flightReservations) {
+        this.flightReservations = flightReservations;
+    }
+
 
     public Customer(String firstName, String lastName, String mobileNumber, String address, String username, String password, String email) {
         this.firstName = firstName;

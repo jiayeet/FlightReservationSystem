@@ -47,15 +47,8 @@ public class Airport implements Serializable {
     @NotNull
     @Size(min = 1, max = 32)
     private String country;
-    
-    @OneToMany(mappedBy = "airportOrigin")
-    private List<FlightRoute> originFlightRoutes;
-    @OneToMany(mappedBy = "airportDestination")
-    private List<FlightRoute> destinationFlightRoutes;
 
     public Airport() {
-        originFlightRoutes = new ArrayList<>();
-        destinationFlightRoutes = new ArrayList<>();
     }
 
     public Airport(String iataAirportCode, String airportName, String city, String state, String country) {
@@ -65,36 +58,6 @@ public class Airport implements Serializable {
         this.state = state;
         this.country = country;
     }
-    
-    /**
-     * @return the originFlightRoutes
-     */
-    public List<FlightRoute> getOriginFlightRoutes() {
-        return originFlightRoutes;
-    }
-
-    /**
-     * @param originFlightRoutes the originFlightRoutes to set
-     */
-    public void setOriginFlightRoutes(List<FlightRoute> originFlightRoutes) {
-        this.originFlightRoutes = originFlightRoutes;
-    }
-
-    /**
-     * @return the destinationFlightRoutes
-     */
-    public List<FlightRoute> getDestinationFlightRoutes() {
-        return destinationFlightRoutes;
-    }
-
-    /**
-     * @param destinationFlightRoutes the destinationFlightRoutes to set
-     */
-    public void setDestinationFlightRoutes(List<FlightRoute> destinationFlightRoutes) {
-        this.destinationFlightRoutes = destinationFlightRoutes;
-    }
-
-    
     
     /**
      * @return the iataAirportCode

@@ -31,6 +31,8 @@ public class AircraftConfiguration implements Serializable {
     private String name;
     @Column(nullable = false)
     private Integer numOfCabinClass;
+    @Column(nullable = false)
+    private Integer maximumCapacity;
 
     @ManyToOne(optional = false)
     @JoinColumn(nullable = false)
@@ -43,7 +45,19 @@ public class AircraftConfiguration implements Serializable {
         cabinClasses = new ArrayList<>();
     }
     
-    
+    /**
+     * @return the maximumCapacity
+     */
+    public Integer getMaximumCapacity() {
+        return maximumCapacity;
+    }
+
+    /**
+     * @param maximumCapacity the maximumCapacity to set
+     */
+    public void setMaximumCapacity(Integer maximumCapacity) {
+        this.maximumCapacity = maximumCapacity;
+    }
 
     public Long getAircraftConfigurationId() {
         return aircraftConfigurationId;

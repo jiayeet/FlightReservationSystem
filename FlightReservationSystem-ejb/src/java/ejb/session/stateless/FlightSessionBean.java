@@ -115,10 +115,23 @@ public class FlightSessionBean implements FlightSessionBeanRemote, FlightSession
             
             if(flightToUpdate.getFlightNumber().equals(flight.getFlightNumber()))
             {
-                flightToUpdate.setFlightNumber(flight.getFlightNumber());
-                flightToUpdate.setEnabled(flight.getEnabled());
-                flightToUpdate.setAircraftConfiguration(flight.getAircraftConfiguration());
-                flightToUpdate.setFlightRoute(flight.getFlightRoute());
+                if (flightToUpdate.getFlightNumber() != null) {
+                    flightToUpdate.setFlightNumber(flight.getFlightNumber());
+                }
+                
+                if (flightToUpdate.getFlightNumber() != null) {
+                    flightToUpdate.setEnabled(flight.getEnabled());
+                }
+                
+                if (flightToUpdate.getFlightRoute() != null) {
+                    flightToUpdate.setFlightRoute(flight.getFlightRoute());
+                }
+                
+                if (flightToUpdate.getAircraftConfiguration() != null) {
+                    flightToUpdate.setAircraftConfiguration(flight.getAircraftConfiguration());
+                }
+
+                
                 //flightToUpdate.setFlightSchedules(flight.getFlightSchedules());
             }
             else
