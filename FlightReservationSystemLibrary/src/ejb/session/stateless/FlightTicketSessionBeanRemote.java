@@ -4,9 +4,9 @@
  */
 package ejb.session.stateless;
 
-import entity.Passenger;
+import entity.FlightTicket;
 import javax.ejb.Remote;
-import util.exception.PassengerPassportNumberExistException;
+import util.exception.FlightTicketIdExistenceException;
 import util.exception.UnknownPersistenceException;
 
 /**
@@ -14,8 +14,8 @@ import util.exception.UnknownPersistenceException;
  * @author 65968
  */
 @Remote
-public interface PassengerSessionBeanRemote {
+public interface FlightTicketSessionBeanRemote {
 
-    public Long createNewPassenger(Passenger newPassenger);
+    public Long createNewFlightTicket(FlightTicket newFlightTicket) throws FlightTicketIdExistenceException, UnknownPersistenceException;
     
 }

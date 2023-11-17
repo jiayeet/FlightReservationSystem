@@ -75,6 +75,20 @@ public class Customer implements Serializable {
         passengers = new ArrayList();
     }
     
+    /**
+     * @return the passengers
+     */
+    public List<Passenger> getPassengers() {
+        return passengers;
+    }
+
+    /**
+     * @param passengers the passengers to set
+     */
+    public void setPassengers(List<Passenger> passengers) {
+        this.passengers = passengers;
+    }
+    
     
     /**
      * @return the creditCardRecord

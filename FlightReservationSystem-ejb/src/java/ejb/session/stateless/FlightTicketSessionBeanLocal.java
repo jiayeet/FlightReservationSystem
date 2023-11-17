@@ -4,9 +4,9 @@
  */
 package ejb.session.stateless;
 
-import entity.Passenger;
+import entity.FlightTicket;
 import javax.ejb.Local;
-import util.exception.PassengerPassportNumberExistException;
+import util.exception.FlightTicketIdExistenceException;
 import util.exception.UnknownPersistenceException;
 
 /**
@@ -14,8 +14,8 @@ import util.exception.UnknownPersistenceException;
  * @author 65968
  */
 @Local
-public interface PassengerSessionBeanLocal {
+public interface FlightTicketSessionBeanLocal {
     
-    public Long createNewPassenger(Passenger newPassenger);
+    public Long createNewFlightTicket(FlightTicket newFlightTicket) throws FlightTicketIdExistenceException, UnknownPersistenceException;
     
 }

@@ -4,12 +4,12 @@
  */
 package ejb.session.stateless;
 
-import entity.Passenger;
+import entity.FlightTicket;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
-import util.exception.PassengerPassportNumberExistException;
+import util.exception.FlightTicketIdExistenceException;
 import util.exception.UnknownPersistenceException;
 
 /**
@@ -17,16 +17,17 @@ import util.exception.UnknownPersistenceException;
  * @author 65968
  */
 @Stateless
-public class PassengerSessionBean implements PassengerSessionBeanRemote, PassengerSessionBeanLocal {
+public class FlightTicketSessionBean implements FlightTicketSessionBeanRemote, FlightTicketSessionBeanLocal {
 
     @PersistenceContext(unitName = "FlightReservationSystem-ejbPU")
     private EntityManager em;
 
-    public Long createNewPassenger(Passenger newPassenger)
+    @Override
+    public Long createNewFlightTicket(FlightTicket newFlightTicket)
     {
-        em.persist(newPassenger);
+        em.persist(newFlightTicket);
         em.flush();
         
-        return newPassenger.getPassengerId();
+        return newFlightTicket.getFlightTicketId();
     }
 }

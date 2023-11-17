@@ -5,13 +5,21 @@
 package flightreservationsystemcustomerclient;
 
 import ejb.session.stateless.CustomerSessionBeanRemote;
+import ejb.session.stateless.FlightReservationSessionBeanRemote;
+import ejb.session.stateless.FlightTicketSessionBeanRemote;
+import ejb.session.stateless.PassengerSessionBeanRemote;
 import entity.CabinClass;
 import entity.CreditCardRecord;
 import entity.Customer;
+import entity.FlightReservation;
+import entity.FlightRoute;
+import entity.FlightTicket;
 import entity.Passenger;
+import java.util.List;
 import java.util.Scanner;
 import util.enumeration.CabinClassType;
 import util.exception.CustomerUsernameExistException;
+import util.exception.FlightReservationNotFoundException;
 import util.exception.InvalidLoginCredentials;
 import util.exception.UnknownPersistenceException;
 
@@ -23,10 +31,21 @@ public class MainApp {
     
     private CustomerSessionBeanRemote customerSessionBeanRemote;
     private Customer currentCustomer;
+    private PassengerSessionBeanRemote passengerSessionBeanRemote;
+    private FlightReservationSessionBeanRemote flightReservationSessionBeanRemote;
+    private FlightTicketSessionBeanRemote flightTicketSessionBeanRemote;
+    //private FlightSchedulePlanSessionBeanRemote flightSchedulePlanSessionBeanRemote;
+    //private FlightScheduleSessionBean flightScheduleSessionBean;
     
-    MainApp(CustomerSessionBeanRemote customerSessionBeanRemote) {
+    MainApp(CustomerSessionBeanRemote customerSessionBeanRemote, PassengerSessionBeanRemote passengerSessionBeanRemote, FlightReservationSessionBeanRemote flightReservationSessionBeanRemote,
+            FlightTicketSessionBeanRemote flightTicketSessionBeanRemote /*, flightSchedulePlanSessionBeanRemote flightSchedulePlanSessionBeanRemote, FlightScheduleSessionBean flightScheduleSessionBean*/) {
         this.customerSessionBeanRemote = customerSessionBeanRemote;
         this.currentCustomer = new Customer();
+        this.passengerSessionBeanRemote = passengerSessionBeanRemote;
+        this.flightReservationSessionBeanRemote = flightReservationSessionBeanRemote;
+        this.flightTicketSessionBeanRemote = flightTicketSessionBeanRemote;
+        //this.flightSchedulePlanSessionBeanRemote = flightSchedulePlanSessionBeanRemote;
+        //this.flightScheduleSessionBean = flightScheduleSessionBean;
     }
     
     public void runApp() {
@@ -165,7 +184,7 @@ public class MainApp {
     private void searchFlight() {
         Scanner scanner = new Scanner(System.in);
         String input = "";
-        String tripType = "";
+        Integer tripType;
         String departureAirport = "";
         String destinationAirport = "";
         String departureDate = "";
@@ -174,25 +193,42 @@ public class MainApp {
         Boolean directFlight;
 
         System.out.println("*** Flight Reservation System :: Customer :: Search Flight ***\n");
-        System.out.print("Enter trip type> ");
-        tripType = scanner.nextLine().trim();
+        while (true) {
+            System.out.print("Select Trip Type (1: Regular Trip, 2: Round-Trip, 3: Return Trip>");
+            tripType = scanner.nextInt();
+            if (tripType >= 1 && tripType <= 3) {
+                    break;
+            } 
+            else {
+                System.out.println("Invalid option, please try again!\n");
+            }
+        }
         System.out.print("Enter departure airport> ");
         departureAirport = scanner.nextLine().trim();
         System.out.print("Enter destination airport> ");
         destinationAirport = scanner.nextLine().trim();
         System.out.print("Enter departure date> ");
         departureDate = scanner.nextLine().trim();
-        System.out.print("Enter return date> ");
-        returnDate = scanner.nextLine().trim();
+        
+        if (tripType == 2 && tripType == 3) {
+            System.out.print("Enter return date> ");
+            returnDate = scanner.nextLine().trim();
+        }
+        
         System.out.print("Enter number of passengers> ");
         noOfPassengers = scanner.nextInt();
-
-        System.out.print("Do you have a preference for direct flight? Y for yes> ");
-        input = scanner.nextLine().trim();
-
-        if (input.equals("Y")) {
-            directFlight = true;
+                
+        while (true) {
+            System.out.print("Select preference for flight (1: Direct, 2: Connecting, 3: No Preference> ");
+            Integer flightPreferenceType = scanner.nextInt();
+            if (flightPreferenceType >= 1 && flightPreferenceType <= 3) {
+                break;
+            } 
+            else {
+                System.out.println("Invalid option, please try again!\n");
+            }
         }
+
 
         while (true) {
             System.out.print("Select Cabin Class Type (1: First Class, 2: Business Class, 3: Premium Economy Class, 4: Economy Class)> ");
@@ -208,6 +244,8 @@ public class MainApp {
         }
         
         //TODO - Flight Schedule printing
+        //TODO - Fare printing
+        
         
         System.out.println("Would you like to reserve a flight? (Enter 'Y' for yes)> ");
         input = scanner.nextLine().trim();
@@ -220,8 +258,12 @@ public class MainApp {
         Scanner scanner = new Scanner(System.in);
         
         
+        
+        //TODO - Flight Reservation Logic
+        
         for(int i = 0; i < noOfPassengers; i++) {
             Passenger passenger = new Passenger();
+            FlightTicket flightTicket = new FlightTicket();
             
             System.out.println("Passenger " + "1\n");
             
@@ -232,11 +274,23 @@ public class MainApp {
             System.out.print("Enter Passenger's Passport Number> ");
             passenger.setPassportNumber(scanner.nextLine().trim());
             
+            Long passengerId = passengerSessionBeanRemote.createNewPassenger(passenger);
+            
+            System.out.print("Enter Passenger's Seat Number> ");
+            flightTicket.setSeatNumber(scanner.nextLine().trim());
+            flightTicket.setPassenger(passenger);
+            //flightTicket.setCabinClass(cabinClass);
+            //flightTicket.setFlightReservation(flightReservation);
+            //flightTicket.setFlightSchedule(flightSchedule);
+            
+            //flightReservation.getFlightTickets().add(flightTicket);
+            currentCustomer.getPassengers().add(passenger);
             //TO DO - Add in the association with customer and flight ticket
         }
     }
     
     private void checkOut() {
+
         Scanner scanner = new Scanner(System.in);
         CreditCardRecord newCreditCard = new CreditCardRecord();
         
@@ -259,12 +313,43 @@ public class MainApp {
     }
     
     private void viewMyFlightReservations() {
+        Scanner scanner = new Scanner(System.in);
         
+        System.out.println("*** Flight Reservation System :: Route Planner :: View All Flight Routes ***\n");
+        
+        List<FlightReservation> flightReservations = flightReservationSessionBeanRemote.retrieveAllFlightReservations();
+        System.out.printf("%8s%20s%20s\n", "Flight Route ID", "Origin AITA Code ", "Destination AITA Code");
+
+        for(FlightReservation flightReservation:flightReservations)
+        {
+            //System.out.printf("%8s%20s%20s\n", flightRoute.getFlightRouteId(), flightRoute.getAirportOrigin().getIataAirportCode(), flightRoute.getAirportDestination().getIataAirportCode());
+        }
+        
+        System.out.print("Press any key to continue...> ");
+        scanner.nextLine();
     }
     
     private void viewMyFlightReservationDetails() {
+        Scanner scanner = new Scanner(System.in);
+        Integer response = 0;
         
+        System.out.println("*** Flight Management System :: Customer :: View Flight Reservation Details ***\n");
+        System.out.print("Enter Flight Reservation ID> ");
+        Long flightReservationId = scanner.nextLong();
+        
+        try
+        {
+            FlightReservation flightReservation = flightReservationSessionBeanRemote.retrieveFlightReservationByFlightReservationId(flightReservationId);
+            /*System.out.printf("%-15s%-25s%-25s\n", "Flight ID", "AITA Origin Code ", "AITA Destination Code");
+            System.out.printf("%-15s%-25s%-25s\n", flight.getFlightId().toString(), flight.getFlightRoute().getAirportOrigin().getIataAirportCode(), flight.getFlightRoute().getAirportDestination().getIataAirportCode());
+            System.out.printf("%-15s%-25s\n", "Cabin Classes", "Number of Available Seats");
+            for (int i = 0; i < flight.getAircraftConfiguration().getCabinClasses().size(); i++) {
+                System.out.printf("%-15s%-25s\n", flight.getAircraftConfiguration().getCabinClasses().get(i).getCabinClassType().toString(), flight.getAircraftConfiguration().getCabinClasses().get(i).getMaxCapacity());
+            }*/
+        }
+        catch(FlightReservationNotFoundException ex)
+        {
+            System.out.println("An error has occurred while retrieving flight: " + ex.getMessage() + "\n");
+        }
     }
-    
-    
 }

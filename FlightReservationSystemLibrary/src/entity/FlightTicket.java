@@ -42,7 +42,23 @@ public class FlightTicket implements Serializable {
     @JoinColumn(name = "flightReservationId")
     private FlightReservation flightReservation;
 
+    public FlightTicket() {
+    }
     
+    
+    /**
+     * @return the flightReservation
+     */
+    public FlightReservation getFlightReservation() {
+        return flightReservation;
+    }
+
+    /**
+     * @param flightReservation the flightReservation to set
+     */
+    public void setFlightReservation(FlightReservation flightReservation) {
+        this.flightReservation = flightReservation;
+    }
     
     /**
      * @return the seatNumber
@@ -111,7 +127,7 @@ public class FlightTicket implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (flightTicketId != null ? flightTicketId.hashCode() : 0);
+        hash += (getFlightTicketId() != null ? getFlightTicketId().hashCode() : 0);
         return hash;
     }
 
@@ -122,7 +138,7 @@ public class FlightTicket implements Serializable {
             return false;
         }
         FlightTicket other = (FlightTicket) object;
-        if ((this.flightTicketId == null && other.flightTicketId != null) || (this.flightTicketId != null && !this.flightTicketId.equals(other.flightTicketId))) {
+        if ((this.getFlightTicketId() == null && other.getFlightTicketId() != null) || (this.getFlightTicketId() != null && !this.flightTicketId.equals(other.flightTicketId))) {
             return false;
         }
         return true;
@@ -130,7 +146,7 @@ public class FlightTicket implements Serializable {
 
     @Override
     public String toString() {
-        return "entity.FlightTicket[ id=" + flightTicketId + " ]";
+        return "entity.FlightTicket[ id=" + getFlightTicketId() + " ]";
     }
     
 }
