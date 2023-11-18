@@ -6,15 +6,19 @@ package entity;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import util.enumeration.FlightScheduleType;
 
 /**
@@ -28,23 +32,37 @@ public class FlightSchedulePlan implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long flightSchedulePlanId;
+    @Column(nullable = false, length = 5)
     private String flightNumber;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private FlightScheduleType FlightScheduleType;
+    // dayOfWeek maps integer values to the respective days of the week, with Sunday = 1, Saturday = 7 following Calendar.DAY_OF_WEEK
+    @Column
+    private int dayOfWeek;
+    @Column
+    private int nDay;
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column
+    private Date startDateTime;
+    @Temporal(TemporalType.DATE)
+    @Column
+    private Date endDate;
+    @Column(nullable = false)
     private Boolean enabled;
     
-    @ManyToOne
-    @JoinColumn(name = "flightId")
-    private Flight flight;
+    @ManyToMany
+    private List<Fare> fares;
     
-    /*@ManyToMany
-    private List<Fare> fares;*/
-    
-    @OneToMany(mappedBy = "flightSchedulePlan")
+    @OneToMany
     private List<FlightSchedule> flightSchedules; 
 
+    
     public FlightSchedulePlan() {
+        fares = new ArrayList<>();
         flightSchedules = new ArrayList<>();
     }
+    
     
     /**
      * @return the flightNumber
@@ -86,34 +104,6 @@ public class FlightSchedulePlan implements Serializable {
      */
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
-    }
-
-    /**
-     * @return the flight
-     */
-    public Flight getFlight() {
-        return flight;
-    }
-
-    /**
-     * @param flight the flight to set
-     */
-    public void setFlight(Flight flight) {
-        this.flight = flight;
-    }
-
-    /**
-     * @return the fare
-     */
-    /*public Fare getFare() {
-        return fare;
-    }
-
-    /**
-     * @param fare the fare to set
-     */
-    /*public void setFare(Fare fare) {
-        this.fare = fare;
     }
 
     /**
@@ -163,6 +153,76 @@ public class FlightSchedulePlan implements Serializable {
     @Override
     public String toString() {
         return "entity.FlightSchedulePlan[ id=" + flightSchedulePlanId + " ]";
+    }
+
+    /**
+     * @return the dayOfWeek
+     */
+    public int getDayOfWeek() {
+        return dayOfWeek;
+    }
+
+    /**
+     * @param dayOfWeek the dayOfWeek to set
+     */
+    public void setDayOfWeek(int dayOfWeek) {
+        this.dayOfWeek = dayOfWeek;
+    }
+
+    /**
+     * @return the nDay
+     */
+    public int getnDay() {
+        return nDay;
+    }
+
+    /**
+     * @param nDay the nDay to set
+     */
+    public void setnDay(int nDay) {
+        this.nDay = nDay;
+    }
+
+    /**
+     * @return the startDateTime
+     */
+    public Date getStartDateTime() {
+        return startDateTime;
+    }
+
+    /**
+     * @param startDateTime the startDateTime to set
+     */
+    public void setStartDateTime(Date startDateTime) {
+        this.startDateTime = startDateTime;
+    }
+
+    /**
+     * @return the endDate
+     */
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    /**
+     * @param endDate the endDate to set
+     */
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+
+    /**
+     * @return the fares
+     */
+    public List<Fare> getFares() {
+        return fares;
+    }
+
+    /**
+     * @param fares the fares to set
+     */
+    public void setFares(List<Fare> fares) {
+        this.fares = fares;
     }
     
 }

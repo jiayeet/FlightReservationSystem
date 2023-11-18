@@ -10,3 +10,6 @@
 /FlightReservationSystemCustomerClient/nbproject/private/
 /FlightReservationSystemCustomerClient/build/
 /FlightReservationSystemCustomerClient/dist/
+/build/
+/dist/
+/FlightReservationSystemClient/dist/

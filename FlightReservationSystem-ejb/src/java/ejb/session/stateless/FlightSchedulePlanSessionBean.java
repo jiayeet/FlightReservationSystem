@@ -4,15 +4,22 @@
  */
 package ejb.session.stateless;
 
+import entity.Flight;
 import entity.FlightSchedule;
 import entity.FlightSchedulePlan;
+import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.ejb.EJBContext;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
+import util.exception.CreateNewFlightSchedulePlanException;
 import util.exception.DeleteFlightSchedulePlanException;
+import util.exception.FlightNotFoundException;
 import util.exception.FlightSchedulePlanExistException;
 import util.exception.FlightSchedulePlanNotFoundException;
 import util.exception.GeneralException;
@@ -27,36 +34,93 @@ public class FlightSchedulePlanSessionBean implements FlightSchedulePlanSessionB
 
     @PersistenceContext(unitName = "FlightReservationSystem-ejbPU")
     private EntityManager em;
+    @Resource
+    private EJBContext eJBContext;
+    
+    @EJB
+    private FlightSessionBeanLocal flightSessionBeanLocal;
 
-    @Override
-    public Long createNewFlightSchedulePlan(FlightSchedulePlan flightSchedulePlan) throws FlightSchedulePlanExistException, GeneralException
+    
+    public FlightSchedulePlanSessionBean() 
     {
-        try
-        {   
-            em.persist(flightSchedulePlan);
-            
-            em.flush();
-            
-            for(int i = 0; i < flightSchedulePlan.getFlightSchedules().size(); i++) {
-                FlightSchedule flightSchedule = em.find(FlightSchedule.class, flightSchedulePlan.getFlightSchedules().get(i).getFlightScheduleId());
-                flightSchedule.setFlightSchedulePlan(flightSchedulePlan);
-            }
-
-            return flightSchedulePlan.getFlightSchedulePlanId();
-        }
-        catch(PersistenceException ex)
+    }
+    
+    
+    @Override
+    public Long createNewFlightSchedulePlan(Long flightId, FlightSchedulePlan newFlightSchedulePlan) throws FlightSchedulePlanExistException, GeneralException, CreateNewFlightSchedulePlanException
+    {
+        
+        if (newFlightSchedulePlan != null) 
         {
-            if(ex.getCause() != null && 
-                    ex.getCause().getCause() != null &&
-                    ex.getCause().getCause().getClass().getSimpleName().equals("SQLIntegrityConstraintViolationException"))
+            try
             {
-                throw new FlightSchedulePlanExistException("Flight Schedule Plan already exist");
+                // Need to retrieve flight to to associate within the session bean instead of client since it already exists.
+                Flight flight = flightSessionBeanLocal.retrieveFlightByFlightId(flightId);
+                
+                // Associate new flight schedule plan with the flight number and persist flight schedule plan and associated flight schedules
+                // Persist new flight schedule plans and associated flight schedules in database first to ensure that id can be retrieved for query
+                flight.getFlightSchedulePlans().add(newFlightSchedulePlan);
+                em.persist(newFlightSchedulePlan);
+                
+                for(FlightSchedule flightSchedule : newFlightSchedulePlan.getFlightSchedules())
+                {
+                    em.persist(flightSchedule);
+                }
+                
+                em.flush();
+                
+                // Flight enabled attribute already checked in client
+                if (!flight.getFlightSchedulePlans().isEmpty())
+                {
+                    List<Long> existingFlightSchedulePlanIds = new ArrayList<>();
+                    
+                    for (FlightSchedulePlan existingFlightSchedulePlan : flight.getFlightSchedulePlans())
+                    {
+                        existingFlightSchedulePlanIds.add(existingFlightSchedulePlan.getFlightSchedulePlanId());
+                    }
+                    
+                    Query query = em.createQuery("SELECT fsp1.flightSchedulePlanId FROM FlightSchedulePlan fsp1, IN (fsp1.flightSchedules) fs1, FlightSchedulePlan fsp2, IN (fsp2.flightSchedules) fs2 " + 
+                            "WHERE fsp1.flightSchedulePlanId IN :existingFlightSchedulePlanIds AND fsp2.flightSchedulePlanId = :newFlightSchedulePlanId AND (fs1.departureDateTime <= fs2.arrivalDateTime AND fs1.arrivalDateTime >= fs2.departureDateTime)");
+                    query.setParameter("existingFlightSchedulePlanIds", existingFlightSchedulePlanIds);
+                    query.setParameter("newFlightSchedulePlanId", newFlightSchedulePlan.getFlightSchedulePlanId());
+                    
+                    
+                    List<Long> flightSchedulePlanIdsWithOverlap = query.getResultList();
+                    
+                    if (!flightSchedulePlanIdsWithOverlap.isEmpty())
+                    {
+                        // eJBContext.setRollbackOnly();
+                        
+                        throw new CreateNewFlightSchedulePlanException("Overlap with existing schedules " + flightSchedulePlanIdsWithOverlap.toString() + " for Flight Number : " + flightId + "\n");
+                    }
+                }
+                
+                return newFlightSchedulePlan.getFlightSchedulePlanId();
+                
             }
-            else
+            catch(FlightNotFoundException ex)
             {
-                throw new GeneralException("An unexpected error has occurred: " + ex.getMessage());
+                throw new CreateNewFlightSchedulePlanException(ex.getMessage());
+            }
+            catch (PersistenceException ex)
+            {
+                if (ex.getCause() != null
+                        && ex.getCause().getCause() != null
+                        && ex.getCause().getCause().getClass().getSimpleName().equals("SQLIntegrityConstraintViolationException")) 
+                {
+                    throw new FlightSchedulePlanExistException("Flight Schedule Plan already exist");
+                }
+                else 
+                {
+                    throw new GeneralException("An unexpected error has occurred: " + ex.getMessage());
+                }
             }
         }
+        else
+        {
+            throw new CreateNewFlightSchedulePlanException("Flight Schedule Plan Information not provided");
+        }
+      
     }
     
     @Override
@@ -74,6 +138,9 @@ public class FlightSchedulePlanSessionBean implements FlightSchedulePlanSessionB
         
         if(flightSchedulePlan != null)
         {
+            // Lazily Load to-Many associations
+            flightSchedulePlan.getFlightSchedules();
+            
             return flightSchedulePlan;
         }
         else

@@ -38,7 +38,7 @@ public class Flight implements Serializable {
     @JoinColumn(name = "flightRouteId")
     private FlightRoute flightRoute;
     
-    @OneToMany(mappedBy = "flight")
+    @OneToMany
     private List<FlightSchedulePlan> flightSchedulePlans;
     
     public Flight() {
