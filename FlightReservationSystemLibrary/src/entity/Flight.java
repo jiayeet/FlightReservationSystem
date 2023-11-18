@@ -25,18 +25,21 @@ import javax.validation.constraints.Size;
  */
 @Entity
 public class Flight implements Serializable {
-    
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long flightId;
-    @Column(length = 5)
-    @NotNull
-    @Size(max = 5)
+    @Column(length = 10)
+    //@NotNull
+    //@Size(min = 1, max = 10)
     private String flightNumber;
-    @Column(nullable = false)
-    @NotNull
+    //@Column(nullable = false)
+    //@NotNull
     private Boolean enabled;
+    //@Column(nullable = false)
+    //@NotNull
+    private Boolean isMain;
     
     @OneToOne
     @JoinColumn(name = "aircraftconfig_id")
@@ -46,12 +49,32 @@ public class Flight implements Serializable {
     @JoinColumn(name = "flightRouteId")
     private FlightRoute flightRoute;
     
+    @OneToOne
+    @JoinColumn(name = "complementaryFlight")
+    private Flight complementaryFlight;
+    
     @OneToMany(mappedBy = "flight")
     private List<FlightSchedulePlan> flightSchedulePlans;
     
     public Flight() {
         flightSchedulePlans = new ArrayList<>();
     }
+    
+    /**
+     * @return the complementaryFlight
+     */
+    public Flight getComplementaryFlight() {
+        return complementaryFlight;
+    }
+
+    /**
+     * @param complementaryFlight the complementaryFlight to set
+     */
+    public void setComplementaryFlight(Flight complementaryFlight) {
+        this.complementaryFlight = complementaryFlight;
+    }
+    
+    
     
 
     /**
@@ -95,11 +118,7 @@ public class Flight implements Serializable {
      */
     public void setFlightRoute(FlightRoute flightRoute) {
         this.flightRoute = flightRoute;
-    }
-
-
-
-    
+    } 
     
     public Long getFlightId() {
         return flightId;
@@ -160,6 +179,20 @@ public class Flight implements Serializable {
      */
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+    
+    /**
+     * @return the enabled
+     */
+    public Boolean getIsMain() {
+        return isMain;
+    }
+
+    /**
+     * @param enabled the enabled to set
+     */
+    public void setIsMain(Boolean enabled) {
+        this.isMain = isMain;
     }
     
 }
