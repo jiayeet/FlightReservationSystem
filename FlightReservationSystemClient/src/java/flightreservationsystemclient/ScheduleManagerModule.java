@@ -167,6 +167,8 @@ public class ScheduleManagerModule {
                     complementaryFlight.setAircraftConfiguration(aircraftConfig);
                     complementaryFlight.setFlightRoute(complementaryFlightRoute);
                     complementaryFlight.setEnabled(Boolean.TRUE);
+                    complementaryFlight.setIsMain(Boolean.FALSE);
+                    complementaryFlight.setComplementaryFlight(mainFlight);
                     
                     //TODO - Schedule Plan
 
@@ -174,11 +176,12 @@ public class ScheduleManagerModule {
 
                     System.out.println("Complementary flight created successfully!: " + complementaryFlightId + "\n");
                     
-                    
                     Flight createdComplementaryFlight = flightSessionBeanRemote.retrieveFlightByFlightId(complementaryFlightId);
+                    
                     mainFlight.setComplementaryFlight(createdComplementaryFlight);
                     System.out.println("main flight complementary flight id: " + mainFlight.getComplementaryFlight().getFlightId());
-                    flightSessionBeanRemote.updateFlight(mainFlight);            
+                    flightSessionBeanRemote.updateFlight(mainFlight);
+                    System.out.println("jqowijeqoej");
                 }
             }
         }
@@ -212,7 +215,7 @@ public class ScheduleManagerModule {
 
         for(Flight flight:flights)
         {
-            System.out.printf("%8s%20s%20s\n", flight.getFlightId(), flight.getFlightNumber(), flight.getFlightRoute().getAirportOrigin().getIataAirportCode(), flight.getFlightRoute().getAirportDestination().getIataAirportCode());
+            System.out.printf("%5s%20s%20s%20s\n", flight.getFlightId(), flight.getFlightNumber(), flight.getFlightRoute().getAirportOrigin().getIataAirportCode(), flight.getFlightRoute().getAirportDestination().getIataAirportCode());
         }
         
         System.out.print("Press any key to continue...> ");
@@ -263,14 +266,8 @@ public class ScheduleManagerModule {
         String input;
         
         System.out.println("*** Flight Management System :: Schedule Manager :: View Flight Details :: Update Flight ***\n");
-        System.out.print("Enter Flight Route ID (blank if no change)> ");
-        input = scanner.nextLine().trim();
         
         try {
-            if (input.length() > 0) {
-                FlightRoute newFlightRoute = flightRouteSessionBeanRemote.retrieveFlightRouteByFlightRouteId(Long.valueOf(input));
-                flight.setFlightRoute(newFlightRoute);
-            }
 
             System.out.print("Enter Aircraft Configuration ID (blank if no change)> ");
             input = scanner.nextLine().trim();
@@ -279,12 +276,12 @@ public class ScheduleManagerModule {
                 flight.setAircraftConfiguration(newAircraftConfiguration);
             }
 
-            System.out.print("Enter Flight Schedule Plan ID (blank if no change)> ");
+            /*System.out.print("Enter Flight Schedule Plan ID (blank if no change)> ");
             input = scanner.nextLine().trim();
             if (input.length() > 0) {
                 //FlightSchedulePlan newFlightSchedulePlan = flightSchedulePlanSessionBeanRemote.retrieveFlightSchedulePlanByFlightSchedulePlanID(Long.valueOf(input));
                 //flight.setFlightSchedulePlan(newFlightSchedulePlan);
-            }
+            }*/
 
             flightSessionBeanRemote.updateFlight(flight);
             System.out.println("Flight updated successfully!\n");

@@ -8,7 +8,6 @@ import entity.AircraftConfiguration;
 import entity.Flight;
 import entity.FlightRoute;
 import java.util.List;
-import java.util.Set;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -16,18 +15,14 @@ import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import util.exception.AircraftConfigurationNotFoundException;
 import util.exception.DeleteFlightException;
 import util.exception.FlightExistException;
 import util.exception.FlightNotFoundException;
 import util.exception.FlightRouteNotFoundException;
 import util.exception.GeneralException;
-import util.exception.InputDataValidationException;
 import util.exception.UpdateFlightException;
+import javax.ejb.EJB;
 
 /**
  *
@@ -39,7 +34,9 @@ public class FlightSessionBean implements FlightSessionBeanRemote, FlightSession
     @PersistenceContext(unitName = "FlightReservationSystem-ejbPU")
     private EntityManager em;
     
+    @EJB
     private FlightRouteSessionBeanLocal flightRouteSessionBeanLocal;
+    @EJB
     private AircraftConfigurationSessionBeanLocal aircraftConfigurationSessionBeanLocal;
     
     @Override
@@ -67,7 +64,7 @@ public class FlightSessionBean implements FlightSessionBeanRemote, FlightSession
     public List<Flight> retrieveAllFlights()
     {
         
-        Query query = em.createQuery("Select f FROM Flight f");
+        Query query = em.createQuery("Select f FROM Flight f ORDER BY f.flightNumber ASC");
         
         return query.getResultList();
     }
@@ -93,7 +90,7 @@ public class FlightSessionBean implements FlightSessionBeanRemote, FlightSession
     @Override
     public Flight retrieveFlightByFlightNumber(String flightNumber) throws FlightNotFoundException
     {
-        Query query = em.createQuery("SELECT f FROM Flight f WHERE s.flightNumber = :inFlightNumber");
+        Query query = em.createQuery("SELECT f FROM Flight f WHERE f.flightNumber = :inFlightNumber");
         query.setParameter("inFlightNumber", flightNumber);
         
         try
@@ -107,65 +104,50 @@ public class FlightSessionBean implements FlightSessionBeanRemote, FlightSession
     }
     
     @Override
-    public void updateFlight(Flight flight) throws AircraftConfigurationNotFoundException, FlightNotFoundException, UpdateFlightException
+    public void updateFlight(Flight flight) throws AircraftConfigurationNotFoundException, FlightNotFoundException, UpdateFlightException, FlightRouteNotFoundException
     {
-        try {
-        if(flight != null && flight.getFlightId() != null && flight.getFlightNumber() != null)
-        {
-            Flight flightToUpdate = retrieveFlightByFlightId(flight.getFlightId());
+            System.out.println("check 1");
             
-            if(flightToUpdate.getFlightNumber().equals(flight.getFlightNumber()))
-            {
-                if (flight.getFlightNumber() != null) {
+            if (flight != null && flight.getFlightId() != null) {
+                Flight flightToUpdate = retrieveFlightByFlightId(flight.getFlightId());
+                System.out.println("check 2");
+
+                if (flightToUpdate.getFlightNumber().equals(flight.getFlightNumber())) {
+                    System.out.println("check 3");
                     flightToUpdate.setFlightNumber(flight.getFlightNumber());
-                }
-                
-                if (flight.getEnabled() != null) {
                     flightToUpdate.setEnabled(flight.getEnabled());
-                }
-                
-                if (flight.getIsMain() != null) {
                     flightToUpdate.setIsMain(flight.getIsMain());
-                }
-                
-                if (flight.getFlightRoute() != null) {
-                    FlightRoute flightRouteUpdate = flightRouteSessionBeanLocal.retrieveFlightRouteByFlightRouteId(flight.getFlightRoute().getFlightRouteId());
-                    flightToUpdate.setFlightRoute(flightRouteUpdate);
-                }
-                
-                if (flight.getAircraftConfiguration() != null) {
-                    AircraftConfiguration aircraftConfigUpdate = aircraftConfigurationSessionBeanLocal.retrieveAircraftConfigurationByAircraftConfigurationId(flight.getAircraftConfiguration().getAircraftConfigurationId());
-                    flightToUpdate.setAircraftConfiguration(aircraftConfigUpdate);
-                }
-                
-                if (flight.getComplementaryFlight() != null) {
-                    System.out.println("complementary flight id: " + flight.getComplementaryFlight().getFlightId());
-                    Flight complementaryFlight = retrieveFlightByFlightId(flight.getComplementaryFlight().getFlightId());
-                    if (complementaryFlight != null) {
-                        flightToUpdate.setComplementaryFlight(complementaryFlight);
+
+
+                    if (flight.getFlightRoute() != null) {
+                        FlightRoute flightRouteUpdate = flightRouteSessionBeanLocal.retrieveFlightRouteByFlightRouteId(flight.getFlightRoute().getFlightRouteId());
+                        flightToUpdate.setFlightRoute(flightRouteUpdate);
+                        System.out.println("check 4");
+                    } else {
+                        throw new FlightRouteNotFoundException("Flight route to be updated cannot be found.");
                     }
+                    
+                    if (flight.getAircraftConfiguration() != null) {
+                        AircraftConfiguration aircraftConfigUpdate = aircraftConfigurationSessionBeanLocal.retrieveAircraftConfigurationByAircraftConfigurationId(flight.getAircraftConfiguration().getAircraftConfigurationId());
+                        flightToUpdate.setAircraftConfiguration(aircraftConfigUpdate);
+                        System.out.println("check 8");
+                    } else {
+                        throw new AircraftConfigurationNotFoundException("Aircraft configuration cannot be found.");
+                    }
+                    
+                    if (flight.getComplementaryFlight() != null) {
+                        System.out.println("complementary flight id: " + flight.getComplementaryFlight().getFlightId());
+                        Flight complementaryFlight = retrieveFlightByFlightId(flight.getComplementaryFlight().getFlightId());
+                        flightToUpdate.setComplementaryFlight(complementaryFlight);
+                    } else {
+                        System.out.println("Complementary flight not provided for update");
+                    }
+                    
+                    //flightToUpdate.setFlightSchedules(flight.getFlightSchedules());
+                } else {
+                    throw new UpdateFlightException("Flight number of flight record to be updated does not match the existing record");
                 }
-                
-                //flightToUpdate.setFlightSchedules(flight.getFlightSchedules());
             }
-            else
-            {
-                throw new UpdateFlightException("Flight number of flight record to be updated does not match the existing record");
-            }
-        }
-        }
-        catch (FlightRouteNotFoundException ex)
-        {
-            throw new FlightNotFoundException("Flight route Id to be provided does not exist.");
-        }
-        catch (AircraftConfigurationNotFoundException ex)
-        {
-            throw new AircraftConfigurationNotFoundException("Aircraft configuration cannot be found.");
-        }
-        catch (FlightNotFoundException ex)
-        {
-            throw new FlightNotFoundException("Flight ID not provided for flight to be updated, flight does not exist.");
-        }
     }
     
     @Override
@@ -173,30 +155,22 @@ public class FlightSessionBean implements FlightSessionBeanRemote, FlightSession
     {
         Flight flightToRemove = retrieveFlightByFlightId(flightId);
         
-        if(flightToRemove.getAircraftConfiguration() == null && flightToRemove.getFlightRoute() == null && flightToRemove.getFlightSchedulePlans().isEmpty())
+        if(flightToRemove.getFlightSchedulePlans().isEmpty())
         {
+            if(flightToRemove.getIsMain() == true && flightToRemove.getComplementaryFlight() != null) {
+                Flight complementaryFlight = retrieveFlightByFlightId(flightToRemove.getComplementaryFlight().getFlightId());
+                em.remove(complementaryFlight);
+            } else if (flightToRemove.getIsMain() == false) {
+                Flight mainFlightRoute = retrieveFlightByFlightId(flightToRemove.getComplementaryFlight().getFlightId());
+                mainFlightRoute.setComplementaryFlight(null);
+            }
+            
             em.remove(flightToRemove);
-        }
-        else if(flightToRemove.getAircraftConfiguration() == null || flightToRemove.getFlightRoute() == null || flightToRemove.getFlightSchedulePlans().isEmpty())
-        {
-            flightToRemove.setEnabled(Boolean.FALSE);
-            throw new DeleteFlightException("Flight ID " + flightId + " has been disabled due to existing associations.");
         }
         else
         {
-            throw new DeleteFlightException("Flight ID " + flightId + " is associated with existing aircraft configurations, flight routes and flight schedule plans and cannot be deleted!");
+            throw new DeleteFlightException("Flight ID " + flightId + " is associated with existing flight schedule plans and cannot be deleted!");
         }
     }
     
-    private String prepareInputDataValidationErrorsMessage(Set<ConstraintViolation<Flight>>constraintViolations)
-    {
-        String msg = "Input data validation error!:";
-            
-        for(ConstraintViolation constraintViolation:constraintViolations)
-        {
-            msg += "\n\t" + constraintViolation.getPropertyPath() + " - " + constraintViolation.getInvalidValue() + "; " + constraintViolation.getMessage();
-        }
-        
-        return msg;
-    }
 }

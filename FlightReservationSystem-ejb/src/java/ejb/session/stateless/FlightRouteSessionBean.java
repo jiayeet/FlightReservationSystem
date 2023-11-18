@@ -105,7 +105,7 @@ public class FlightRouteSessionBean implements FlightRouteSessionBeanRemote, Fli
         }
     }
     
-    public void DeleteRoute(FlightRoute flightRoute) {
+    /*public void DeleteRoute(FlightRoute flightRoute) {
         try {
             FlightRoute flightRouteToDelete = retrieveFlightRouteByFlightRouteId(flightRoute.getFlightRouteId());
             em.remove(flightRouteToDelete);
@@ -113,7 +113,7 @@ public class FlightRouteSessionBean implements FlightRouteSessionBeanRemote, Fli
         catch (FlightRouteNotFoundException ex) {
             System.out.println("Flight route is not found!");
         }
-    }
+    }*/
     
     @Override
     public void deleteFlightRoute(Long flightRouteId) throws FlightRouteNotFoundException, DeleteFlightRouteException

@@ -31,5 +31,5 @@ public interface FlightRouteSessionBeanLocal {
     
     public void updateFlightRoute(FlightRoute flightRoute) throws FlightRouteNotFoundException;
     
-    public void DeleteRoute(FlightRoute flightRoute);
+    //public void DeleteRoute(FlightRoute flightRoute);
 }

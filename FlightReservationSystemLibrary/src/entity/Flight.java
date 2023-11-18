@@ -192,7 +192,7 @@ public class Flight implements Serializable {
      * @param enabled the enabled to set
      */
     public void setIsMain(Boolean enabled) {
-        this.isMain = isMain;
+        this.isMain = enabled;
     }
     
 }
