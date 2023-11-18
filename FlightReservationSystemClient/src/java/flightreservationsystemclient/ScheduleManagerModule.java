@@ -131,11 +131,9 @@ public class ScheduleManagerModule {
             System.out.print("Enter Aircraft Configuration Id> ");
             AircraftConfiguration aircraftConfig = aircraftConfigurationSessionBeanRemote.retrieveAircraftConfigurationByAircraftConfigurationId(Long.valueOf(scanner.nextLine().trim()));
             newFlight.setAircraftConfiguration(aircraftConfig);
-            System.out.println("aircraftconfig Id: " + aircraftConfig.getAircraftConfigurationId());
 
             System.out.print("Enter Flight Route Id> ");
             FlightRoute flightRoute = flightRouteSessionBeanRemote.retrieveFlightRouteByFlightRouteId(Long.valueOf(scanner.nextLine().trim()));
-            System.out.println("flightRoute Id: " + flightRoute.getFlightRouteId());
 
             while (flightRoute.getEnabled() == false) {
                 System.out.println("Flight route has been disabled, please input another flightRoute Id");
@@ -179,9 +177,7 @@ public class ScheduleManagerModule {
                     Flight createdComplementaryFlight = flightSessionBeanRemote.retrieveFlightByFlightId(complementaryFlightId);
                     
                     mainFlight.setComplementaryFlight(createdComplementaryFlight);
-                    System.out.println("main flight complementary flight id: " + mainFlight.getComplementaryFlight().getFlightId());
                     flightSessionBeanRemote.updateFlight(mainFlight);
-                    System.out.println("jqowijeqoej");
                 }
             }
         }
