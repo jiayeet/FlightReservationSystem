@@ -15,8 +15,10 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import util.enumeration.FlightScheduleType;
@@ -55,8 +57,15 @@ public class FlightSchedulePlan implements Serializable {
     private List<Fare> fares;
     
     @OneToMany
-    private List<FlightSchedule> flightSchedules; 
-
+    private List<FlightSchedule> flightSchedules;
+    
+    @OneToOne(mappedBy = "mainFlightSchedulePlan")
+    private FlightSchedulePlan mainFlightSchedulePlan;
+    
+    @OneToOne
+    @JoinColumn
+    private FlightSchedulePlan complementaryFlightSchedulePlan;
+    
     
     public FlightSchedulePlan() {
         fares = new ArrayList<>();
@@ -223,6 +232,34 @@ public class FlightSchedulePlan implements Serializable {
      */
     public void setFares(List<Fare> fares) {
         this.fares = fares;
+    }
+
+    /**
+     * @return the mainFlightSchedulePlan
+     */
+    public FlightSchedulePlan getMainFlightSchedulePlan() {
+        return mainFlightSchedulePlan;
+    }
+
+    /**
+     * @param mainFlightSchedulePlan the mainFlightSchedulePlan to set
+     */
+    public void setMainFlightSchedulePlan(FlightSchedulePlan mainFlightSchedulePlan) {
+        this.mainFlightSchedulePlan = mainFlightSchedulePlan;
+    }
+
+    /**
+     * @return the complementaryFlightSchedulePlan
+     */
+    public FlightSchedulePlan getComplementaryFlightSchedulePlan() {
+        return complementaryFlightSchedulePlan;
+    }
+
+    /**
+     * @param complementaryFlightSchedulePlan the complementaryFlightSchedulePlan to set
+     */
+    public void setComplementaryFlightSchedulePlan(FlightSchedulePlan complementaryFlightSchedulePlan) {
+        this.complementaryFlightSchedulePlan = complementaryFlightSchedulePlan;
     }
     
 }

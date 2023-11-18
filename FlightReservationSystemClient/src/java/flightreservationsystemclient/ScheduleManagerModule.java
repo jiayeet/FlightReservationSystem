@@ -22,11 +22,6 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Scanner;
 import util.enumeration.FlightScheduleType;
-import java.util.Set;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import util.exception.AircraftConfigurationNotFoundException;
 import util.exception.CreateNewFlightSchedulePlanException;
 import util.exception.DeleteFlightException;
@@ -36,7 +31,6 @@ import util.exception.FlightRouteNotFoundException;
 import util.exception.FlightSchedulePlanExistException;
 import util.exception.FlightSchedulePlanNotFoundException;
 import util.exception.GeneralException;
-import util.exception.InputDataValidationException;
 import util.exception.UpdateFlightException;
 
 /**
@@ -360,7 +354,7 @@ public class ScheduleManagerModule {
         FlightSchedulePlan newFlightSchedulePlan = new FlightSchedulePlan();
         FlightSchedule newFlightSchedule = new FlightSchedule();
         
-        SimpleDateFormat inputDateFormat = new SimpleDateFormat("d/M/y");
+        SimpleDateFormat inputDateFormat = new SimpleDateFormat("dd MMM yy");
         SimpleDateFormat inputTimeFormat = new SimpleDateFormat("h:mm a");
         Date departureDate;
         Date departureTime;
@@ -398,7 +392,7 @@ public class ScheduleManagerModule {
             
             while(true)
             {
-                System.out.println("Select Schedule Type (1: Single, 2: Multiple, 3: Recurrent every N Days, 4: Recurrent every Week)> ");
+                System.out.print("Select Schedule Type (1: Single, 2: Multiple, 3: Recurrent every N Days, 4: Recurrent every Week)> ");
                 Integer scheduleType = 0;
                 scheduleType = scanner.nextInt();
                 
@@ -419,7 +413,7 @@ public class ScheduleManagerModule {
             {
                 do
                 {
-                    System.out.print("Enter Departure Date (dd/mmm/yy)> ");
+                    System.out.print("Enter Departure Date (dd mmm yy)> ");
                     departureDate = inputDateFormat.parse(scanner.nextLine().trim());
                     System.out.print("Enter Departure Time (h:mm AM/PM)> ");
                     departureTime = inputTimeFormat.parse(scanner.nextLine().trim());
@@ -468,19 +462,20 @@ public class ScheduleManagerModule {
             }
             else if(newFlightSchedulePlan.getFlightScheduleType() == FlightScheduleType.RECURRENTNDAY)
             {
-                System.out.println("Enter NDay> ");
+                System.out.print("Enter NDay> ");
                 newFlightSchedulePlan.setnDay(scanner.nextInt());
+                scanner.nextLine();
                 
                 System.out.print("Enter Departure Time (h:mm AM/PM)> ");
                 departureTime = inputTimeFormat.parse(scanner.nextLine().trim());
                 
-                System.out.print("Enter Flight Schedule Plan Start Date (dd/mmm/yy)> ");
+                System.out.print("Enter Flight Schedule Plan Start Date (dd mmm yy)> ");
                 startDate = inputDateFormat.parse(scanner.nextLine().trim());
                 startDate.setHours(departureTime.getHours());
                 startDate.setMinutes(departureTime.getMinutes());
                 newFlightSchedulePlan.setStartDateTime(startDate);
                 
-                System.out.print("Enter Flight Schedule Plan End Date (dd/mmm/yy)> ");
+                System.out.print("Enter Flight Schedule Plan End Date (dd mmm yy)> ");
                 endDate = inputDateFormat.parse(scanner.nextLine().trim());
                 newFlightSchedulePlan.setEndDate(endDate);
                 
@@ -569,13 +564,13 @@ public class ScheduleManagerModule {
                 System.out.print("Enter Departure Time (h:mm AM/PM)> ");
                 departureTime = inputTimeFormat.parse(scanner.nextLine().trim());
                 
-                System.out.print("Enter Flight Schedule Plan Start Date (dd/mmm/yy)> ");
+                System.out.print("Enter Flight Schedule Plan Start Date (dd mmm yy)> ");
                 startDate = inputDateFormat.parse(scanner.nextLine().trim());
                 startDate.setHours(departureTime.getHours());
                 startDate.setMinutes(departureTime.getMinutes());
                 newFlightSchedulePlan.setStartDateTime(startDate);
                 
-                System.out.print("Enter Flight Schedule Plan End Date (dd/mmm/yy)> ");
+                System.out.print("Enter Flight Schedule Plan End Date (dd mmm yy)> ");
                 endDate = inputDateFormat.parse(scanner.nextLine().trim());
                 newFlightSchedulePlan.setEndDate(endDate);
                 
@@ -598,22 +593,28 @@ public class ScheduleManagerModule {
                 // Loop through and create new weekly flight schedules between the startDate and endDate
                 while (startDate.before(endDate))
                 {
-                    newFlightSchedule.setDepartureDateTime(startDate);
-                    newFlightSchedule.setFlightDurationHours(flightDurationHours);
-                    newFlightSchedule.setFlightDurationMinutes(flightDurationMinutes);
+                    Calendar checkDayOfTheWeekCalendar = Calendar.getInstance();
+                    checkDayOfTheWeekCalendar.setTime(startDate);
                     
-                    GregorianCalendar arrivalDateTimeCalendar = new GregorianCalendar();
-                    arrivalDateTimeCalendar.setTime(newFlightSchedule.getDepartureDateTime());
-                    arrivalDateTimeCalendar.add(GregorianCalendar.HOUR_OF_DAY, newFlightSchedule.getFlightDurationHours());
-                    arrivalDateTimeCalendar.add(GregorianCalendar.MINUTE, newFlightSchedule.getFlightDurationMinutes());
-                    arrivalDateTime = arrivalDateTimeCalendar.getTime();
-                    
-                    if (arrivalDateTime.before(endDate))
+                    if (checkDayOfTheWeekCalendar.get(Calendar.DAY_OF_WEEK) == newFlightSchedulePlan.getDayOfWeek())
                     {
-                        newFlightSchedule.setArrivalDateTime(arrivalDateTime);
-                        
-                        // Associate newly created flight schedule and flight schedule plan
-                        newFlightSchedulePlan.getFlightSchedules().add(newFlightSchedule);
+                        newFlightSchedule.setDepartureDateTime(startDate);
+                        newFlightSchedule.setFlightDurationHours(flightDurationHours);
+                        newFlightSchedule.setFlightDurationMinutes(flightDurationMinutes);
+
+                        GregorianCalendar arrivalDateTimeCalendar = new GregorianCalendar();
+                        arrivalDateTimeCalendar.setTime(newFlightSchedule.getDepartureDateTime());
+                        arrivalDateTimeCalendar.add(GregorianCalendar.HOUR_OF_DAY, newFlightSchedule.getFlightDurationHours());
+                        arrivalDateTimeCalendar.add(GregorianCalendar.MINUTE, newFlightSchedule.getFlightDurationMinutes());
+                        arrivalDateTime = arrivalDateTimeCalendar.getTime();
+
+                        if (arrivalDateTime.before(endDate))
+                        {
+                            newFlightSchedule.setArrivalDateTime(arrivalDateTime);
+
+                            // Associate newly created flight schedule and flight schedule plan
+                            newFlightSchedulePlan.getFlightSchedules().add(newFlightSchedule);
+                        }
                     }
                     
                     GregorianCalendar nextFlightScheduleStartDateCalendar = new GregorianCalendar();
@@ -633,7 +634,8 @@ public class ScheduleManagerModule {
                     newFlightSchedule = new FlightSchedule();
                 }
                 
-            } else
+            }
+            else
             {
                 System.out.println("Invalid Flight Schedule Type! Unable to create Flight Schedule Plan for Flight Number " + flightNumber);
             }
@@ -643,7 +645,15 @@ public class ScheduleManagerModule {
             Long flightSchedulePlanId = flightSchedulePlanSessionBeanRemote.createNewFlightSchedulePlan(flight.getFlightId(), newFlightSchedulePlan);
             System.out.println("Flight Schedule Plan " + flightSchedulePlanId + " for Flight Number " + flight.getFlightId() + " successfully created!");
             
+            // Prompt user whether they wish to create a complementary return flight schedule plan
+            if (flight.getComplementaryFlight() != null)
+            {
+                System.out.println("A complementary return flight " + flight.getComplementaryFlight().getFlightNumber() + " exists! Create complementary return flight schedule plan? (Enter 'Y' to create)>  ");
+            }
+            
+            
             // TODO - create and persist fares
+            
         
         }
         catch(FlightNotFoundException ex)

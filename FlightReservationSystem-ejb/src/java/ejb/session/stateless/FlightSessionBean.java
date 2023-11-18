@@ -93,7 +93,7 @@ public class FlightSessionBean implements FlightSessionBeanRemote, FlightSession
     @Override
     public Flight retrieveFlightByFlightNumber(String flightNumber) throws FlightNotFoundException
     {
-        Query query = em.createQuery("SELECT f FROM Flight f WHERE s.flightNumber = :inFlightNumber");
+        Query query = em.createQuery("SELECT f FROM Flight f WHERE f.flightNumber = :inFlightNumber");
         query.setParameter("inFlightNumber", flightNumber);
         
         try

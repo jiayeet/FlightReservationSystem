@@ -53,7 +53,7 @@ public class Flight implements Serializable {
     @JoinColumn(name = "complementaryFlight")
     private Flight complementaryFlight;
     
-    @OneToMany(mappedBy = "flight")
+    @OneToMany
     private List<FlightSchedulePlan> flightSchedulePlans;
     
     public Flight() {

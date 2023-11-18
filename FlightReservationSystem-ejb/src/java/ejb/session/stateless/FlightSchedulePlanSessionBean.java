@@ -57,9 +57,7 @@ public class FlightSchedulePlanSessionBean implements FlightSchedulePlanSessionB
                 // Need to retrieve flight to to associate within the session bean instead of client since it already exists.
                 Flight flight = flightSessionBeanLocal.retrieveFlightByFlightId(flightId);
                 
-                // Associate new flight schedule plan with the flight number and persist flight schedule plan and associated flight schedules
                 // Persist new flight schedule plans and associated flight schedules in database first to ensure that id can be retrieved for query
-                flight.getFlightSchedulePlans().add(newFlightSchedulePlan);
                 em.persist(newFlightSchedulePlan);
                 
                 for(FlightSchedule flightSchedule : newFlightSchedulePlan.getFlightSchedules())
@@ -95,6 +93,8 @@ public class FlightSchedulePlanSessionBean implements FlightSchedulePlanSessionB
                     }
                 }
                 
+                // Associate new flight schedule plan with the flight number and persist flight schedule plan and associated flight schedules
+                flight.getFlightSchedulePlans().add(newFlightSchedulePlan);
                 return newFlightSchedulePlan.getFlightSchedulePlanId();
                 
             }
