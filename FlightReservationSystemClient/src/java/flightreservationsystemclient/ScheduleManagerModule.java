@@ -10,12 +10,16 @@ import ejb.session.stateless.FlightSchedulePlanSessionBeanRemote;
 import ejb.session.stateless.FlightScheduleSessionBeanRemote;
 import ejb.session.stateless.FlightSessionBeanRemote;
 import entity.AircraftConfiguration;
+import entity.CabinClass;
+import entity.DuplicateFareBasisCodeException;
+import entity.Fare;
 import entity.Flight;
 import entity.FlightRoute;
 import entity.FlightSchedule;
 import entity.FlightSchedulePlan;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -365,7 +369,9 @@ public class ScheduleManagerModule {
         String[] flightDuration;
         int flightDurationHours = 0;
         int flightDurationMinutes = 0;
+        int layoverDuration = 0;
         String moreFlightSchedule = "";
+        String createComplementPlan = "";
         
         System.out.println("*** Flight Management System :: Schedule Manager :: Create Flight Schedule Plan ***\n\n");
         System.out.print("Enter Flight Number> ");
@@ -477,6 +483,8 @@ public class ScheduleManagerModule {
                 
                 System.out.print("Enter Flight Schedule Plan End Date (dd mmm yy)> ");
                 endDate = inputDateFormat.parse(scanner.nextLine().trim());
+                endDate.setHours(23);
+                endDate.setMinutes(59);
                 newFlightSchedulePlan.setEndDate(endDate);
                 
                 System.out.print("Enter Flight Duration (hh Hours mm Minutes)> ");
@@ -572,6 +580,8 @@ public class ScheduleManagerModule {
                 
                 System.out.print("Enter Flight Schedule Plan End Date (dd mmm yy)> ");
                 endDate = inputDateFormat.parse(scanner.nextLine().trim());
+                endDate.setHours(23);
+                endDate.setMinutes(59);
                 newFlightSchedulePlan.setEndDate(endDate);
                 
                 System.out.print("Enter Flight Duration (hh Hours mm Minutes)> ");
@@ -648,19 +658,71 @@ public class ScheduleManagerModule {
             // Prompt user whether they wish to create a complementary return flight schedule plan
             if (flight.getComplementaryFlight() != null)
             {
-                System.out.println("A complementary return flight " + flight.getComplementaryFlight().getFlightNumber() + " exists! Create complementary return flight schedule plan? (Enter 'Y' to create)>  ");
+                Flight complementaryReturnFlight = flight.getComplementaryFlight();
+                System.out.print("A complementary return flight " + complementaryReturnFlight.getFlightNumber() + " exists! Create complementary return flight schedule plan? (Enter 'Y' to create)>  ");
+                createComplementPlan = scanner.nextLine().trim();
+                
+                if (createComplementPlan.equals("Y"))
+                {
+                    System.out.print("Enter Layover Duration for " + complementaryReturnFlight.getFlightNumber() + "> ");
+                    layoverDuration = scanner.nextInt();
+                    scanner.nextLine();
+                    
+                    Long complementaryFlightSchedulePlanId = flightSchedulePlanSessionBeanRemote.createComplementaryFlightSchedulePlan(flightSchedulePlanId, layoverDuration, complementaryReturnFlight.getFlightNumber());
+                    System.out.println("Complementary Flight Schedule Plan " + complementaryFlightSchedulePlanId + " successfully created for return flight " + complementaryReturnFlight.getFlightNumber() + "!");
+                }
+                else
+                {
+                    System.out.println("Did not create complementary return flight schedule plan!\n");
+                }
+                
+            }
+            else
+            {
+                System.out.println("No complementary return flight exists. Skipped creating a complementary return flight schedule plan!");
             }
             
-            
             // TODO - create and persist fares
+            List<CabinClass> cabinClasses = aircraftConfigurationSessionBeanRemote.retrieveCabinClassesByAircraftConfigurationId(flight.getAircraftConfiguration().getAircraftConfigurationId());
+            List<Fare> fares = new ArrayList<>();
             
+            for (CabinClass cabinClass : cabinClasses)
+            {
+                String moreFares = "";
+                System.out.println("Requesting fare input for Cabin Class " + cabinClass.getCabinClassType().toString() + ": ");
+                
+                do
+                {
+                    Fare fare = new Fare();
+                    fare.setCabinClass(cabinClass);
+                    System.out.print("Enter Fare Basis Code> ");
+                    fare.setFareBasisCode(scanner.nextLine().trim());              
+                    System.out.print("Enter Fare Amount> ");
+                    fare.setFareAmount(scanner.nextInt());
+                    scanner.nextLine();
+                    
+                    fares.add(fare);
+                    
+                    System.out.print("More fares for Cabin Class " + cabinClass.getCabinClassType().toString() + "? (Enter 'N' to complete fare input)> ");
+                    moreFares = scanner.nextLine().trim();
+                }
+                while (!moreFares.equals("N"));
+                
+            }
+            
+            flightSchedulePlanSessionBeanRemote.linkFlightSchedulePlanToFares(fares, flightSchedulePlanId);
+            System.out.println("Successfully linked flight schedule plan to fares!");
         
         }
         catch(FlightNotFoundException ex)
         {
             System.out.println(ex.getMessage() + "!\n");
         }
-        catch(FlightSchedulePlanExistException | CreateNewFlightSchedulePlanException ex)
+        catch(FlightSchedulePlanNotFoundException ex)
+        {
+            System.out.println("An error has occurred when creating Flight Schedule Plan: Flight Schedule Plan not found!");
+        }
+        catch(FlightSchedulePlanExistException | CreateNewFlightSchedulePlanException | DuplicateFareBasisCodeException ex)
         {
             System.out.println("An error has occurred when creating Flight Schedule Plan: " + ex.getMessage() + "\n");
         }

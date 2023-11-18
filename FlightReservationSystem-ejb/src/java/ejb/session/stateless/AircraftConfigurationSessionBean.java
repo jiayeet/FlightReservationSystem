@@ -104,6 +104,13 @@ public class AircraftConfigurationSessionBean implements AircraftConfigurationSe
         }
     }
 
-    
+    @Override
+    public List<CabinClass> retrieveCabinClassesByAircraftConfigurationId(Long aircraftConfigurationId)
+    {
+        Query query = em.createQuery("SELECT cc FROM AircraftConfiguration ac, IN (ac.cabinClasses) cc WHERE ac.aircraftConfigurationId = :inAircraftConfigurationId");
+        query.setParameter("inAircraftConfigurationId", aircraftConfigurationId);
+        
+        return query.getResultList();
+    }
     
 }

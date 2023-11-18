@@ -5,14 +5,12 @@
 package entity;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
-import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 
 /**
@@ -26,8 +24,10 @@ public class Fare implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long fareId;
+    @Column(nullable = false)
     private String fareBasisCode;
-    private BigDecimal fareAmount;
+    @Column(nullable = false)
+    private Integer fareAmount;
     
     @ManyToOne
     @JoinColumn(nullable = false)
@@ -67,6 +67,48 @@ public class Fare implements Serializable {
     @Override
     public String toString() {
         return "entity.Fare[ id=" + fareId + " ]";
+    }
+
+    /**
+     * @return the fareBasisCode
+     */
+    public String getFareBasisCode() {
+        return fareBasisCode;
+    }
+
+    /**
+     * @param fareBasisCode the fareBasisCode to set
+     */
+    public void setFareBasisCode(String fareBasisCode) {
+        this.fareBasisCode = fareBasisCode;
+    }
+
+    /**
+     * @return the fareAmount
+     */
+    public Integer getFareAmount() {
+        return fareAmount;
+    }
+
+    /**
+     * @param fareAmount the fareAmount to set
+     */
+    public void setFareAmount(Integer fareAmount) {
+        this.fareAmount = fareAmount;
+    }
+
+    /**
+     * @return the cabinClass
+     */
+    public CabinClass getCabinClass() {
+        return cabinClass;
+    }
+
+    /**
+     * @param cabinClass the cabinClass to set
+     */
+    public void setCabinClass(CabinClass cabinClass) {
+        this.cabinClass = cabinClass;
     }
     
 }

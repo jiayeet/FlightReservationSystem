@@ -47,9 +47,11 @@ public class FlightSchedulePlan implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @Column
     private Date startDateTime;
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     @Column
     private Date endDate;
+    @Column
+    private int layoverDuration;
     @Column(nullable = false)
     private Boolean enabled;
     
@@ -63,7 +65,6 @@ public class FlightSchedulePlan implements Serializable {
     private FlightSchedulePlan mainFlightSchedulePlan;
     
     @OneToOne
-    @JoinColumn
     private FlightSchedulePlan complementaryFlightSchedulePlan;
     
     
@@ -260,6 +261,20 @@ public class FlightSchedulePlan implements Serializable {
      */
     public void setComplementaryFlightSchedulePlan(FlightSchedulePlan complementaryFlightSchedulePlan) {
         this.complementaryFlightSchedulePlan = complementaryFlightSchedulePlan;
+    }
+
+    /**
+     * @return the layoverDuration
+     */
+    public int getLayoverDuration() {
+        return layoverDuration;
+    }
+
+    /**
+     * @param layoverDuration the layoverDuration to set
+     */
+    public void setLayoverDuration(int layoverDuration) {
+        this.layoverDuration = layoverDuration;
     }
     
 }

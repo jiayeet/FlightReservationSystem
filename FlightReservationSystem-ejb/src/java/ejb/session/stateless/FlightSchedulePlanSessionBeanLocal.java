@@ -4,6 +4,8 @@
  */
 package ejb.session.stateless;
 
+import entity.DuplicateFareBasisCodeException;
+import entity.Fare;
 import entity.FlightSchedulePlan;
 import java.util.List;
 import javax.ejb.Local;
@@ -30,4 +32,8 @@ public interface FlightSchedulePlanSessionBeanLocal {
     public void updateFlightSchedulePlan(FlightSchedulePlan flightSchedulePlan) throws FlightSchedulePlanNotFoundException, UpdateFlightSchedulePlanException;
     
     public void deleteFlight(Long flightSchedulePlanId) throws FlightSchedulePlanNotFoundException, DeleteFlightSchedulePlanException;
+
+    public Long createComplementaryFlightSchedulePlan(Long mainFlightSchedulePlanId, int layoverDuration, String returnFlightNumber) throws CreateNewFlightSchedulePlanException;
+
+    public void linkFlightSchedulePlanToFares(List<Fare> fares, Long flightSchedulePlanId) throws DuplicateFareBasisCodeException, FlightSchedulePlanNotFoundException;
 }
