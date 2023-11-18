@@ -7,6 +7,8 @@ package entity;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -14,6 +16,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.validation.constraints.NotNull;
 
 /**
  *
@@ -26,21 +30,58 @@ public class FlightRoute implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long flightRouteId;
+    @Column(nullable = false)
+    @NotNull
     private Boolean enabled;
+    @Column(nullable = false)
+    @NotNull
+    private Boolean isMain;
     
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "originAirportId")
     private Airport airportOrigin;
     
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "destinationAirportId")
     private Airport airportDestination;
     
     @OneToMany(mappedBy = "flightRoute")
     private List<Flight> flights;
     
+    @OneToOne
+    @JoinColumn(name = "complementaryFlightRouteId")
+    private FlightRoute complementaryFlightRoute;
+    
     public FlightRoute() {
         flights = new ArrayList<>();
+    }
+    
+    /**
+     * @return the complementaryFlightRoute
+     */
+    public FlightRoute getComplementaryFlightRoute() {
+        return complementaryFlightRoute;
+    }
+
+    /**
+     * @param complementaryFlightRoute the complementaryFlightRoute to set
+     */
+    public void setComplementaryFlightRoute(FlightRoute complementaryFlightRoute) {
+        this.complementaryFlightRoute = complementaryFlightRoute;
+    }
+    
+    /**
+     * @return the flights
+     */
+    public Boolean getIsMain() {
+        return isMain;
+    }
+
+    /**
+     * @param flights the flights to set
+     */
+    public void setIsMain(Boolean isMain) {
+        this.isMain = isMain;
     }
     
     /**

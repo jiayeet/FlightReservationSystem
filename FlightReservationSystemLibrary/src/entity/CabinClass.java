@@ -5,6 +5,8 @@
 package entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -12,6 +14,10 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import util.enumeration.CabinClassType;
 
 /**
@@ -29,21 +35,44 @@ public class CabinClass implements Serializable {
     @Column(nullable = false)
     private CabinClassType cabinClassType;
     @Column(nullable = false)
+    @NotNull
+    @Min(0)
     private Integer numOfAisles;
     @Column(nullable = false)
+    @NotNull
+    @Min(0)
     private Integer numOfRows;
     @Column(nullable = false)
+    @NotNull
+    @Min(0)
     private Integer numOfSeatsAbreast;
     @Column(nullable = false, length = 5)
+    @Size(max = 5)
     private String seatConfiguration;
-
+    @Column(nullable = false)
+    @NotNull
+    @Min(0)
+    private Integer maxCapacity;    
     
+    @ManyToMany
+    private List<FlightReservation> flightReservations;
     
     public CabinClass() {
+        flightReservations = new ArrayList<>();
     }
     
-    public int calculateTotalSeats() {
-        return numOfSeatsAbreast * numOfRows;
+    /**
+     * @return the maxCapacity
+     */
+    public Integer getMaxCapacity() {
+        return maxCapacity;
+    }
+
+    /**
+     * @param maxCapacity the maxCapacity to set
+     */
+    public void setMaxCapacity(Integer maxCapacity) {
+        this.maxCapacity = maxCapacity;
     }
     
     public Long getCabinClassId() {

@@ -28,5 +28,9 @@ public interface FlightRouteSessionBeanRemote {
     public List<FlightRoute> retrieveAllFlightRoutes();
     
     public void deleteFlightRoute(Long flightRouteId) throws FlightRouteNotFoundException, DeleteFlightRouteException;
+
+    public void updateFlightRoute(FlightRoute flightRoute) throws FlightRouteNotFoundException;
+    
+    public void DeleteRoute(FlightRoute flightRoute);
     
 }

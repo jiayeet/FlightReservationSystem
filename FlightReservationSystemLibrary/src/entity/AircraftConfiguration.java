@@ -15,6 +15,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  *
@@ -28,9 +31,17 @@ public class AircraftConfiguration implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long aircraftConfigurationId;
     @Column(nullable = false, length = 64)
+    @NotNull
+    @Size(min = 1, max = 64)
     private String name;
     @Column(nullable = false)
+    @NotNull
+    @Min(0)
     private Integer numOfCabinClass;
+    @Column(nullable = false)
+    @NotNull
+    @Min(0)
+    private Integer maximumCapacity;
 
     @ManyToOne(optional = false)
     @JoinColumn(nullable = false)
@@ -43,7 +54,19 @@ public class AircraftConfiguration implements Serializable {
         cabinClasses = new ArrayList<>();
     }
     
-    
+    /**
+     * @return the maximumCapacity
+     */
+    public Integer getMaximumCapacity() {
+        return maximumCapacity;
+    }
+
+    /**
+     * @param maximumCapacity the maximumCapacity to set
+     */
+    public void setMaximumCapacity(Integer maximumCapacity) {
+        this.maximumCapacity = maximumCapacity;
+    }
 
     public Long getAircraftConfigurationId() {
         return aircraftConfigurationId;

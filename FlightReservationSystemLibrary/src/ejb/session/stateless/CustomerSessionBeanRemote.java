@@ -8,6 +8,7 @@ import entity.Customer;
 import javax.ejb.Remote;
 import util.exception.CustomerNotFoundException;
 import util.exception.CustomerUsernameExistException;
+import util.exception.InputDataValidationException;
 import util.exception.InvalidLoginCredentials;
 import util.exception.UnknownPersistenceException;
 
@@ -18,7 +19,7 @@ import util.exception.UnknownPersistenceException;
 @Remote
 public interface CustomerSessionBeanRemote {
 
-    public Long createNewCustomer(Customer newCustomer) throws CustomerUsernameExistException, UnknownPersistenceException;
+    public Long createNewCustomer(Customer newCustomer) throws CustomerUsernameExistException, UnknownPersistenceException, InputDataValidationException;
 
     public Customer retrieveCustomerByCustomerId(Long customerId) throws CustomerNotFoundException;
 

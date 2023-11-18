@@ -39,14 +39,7 @@ public class FlightRouteSessionBean implements FlightRouteSessionBeanRemote, Fli
             if (!isOriginDestinationUnique(flightRoute)) {
                 throw new FlightRouteExistException("Flight Route with the same origin and destination airports already exists");
             }
-            
             em.persist(flightRoute);
-            
-            Airport originAirport = em.find(Airport.class, flightRoute.getAirportOrigin().getAirportId());
-            Airport destinationAirport = em.find(Airport.class, flightRoute.getAirportDestination().getAirportId());
-            
-            originAirport.getOriginFlightRoutes().add(flightRoute);
-            destinationAirport.getDestinationFlightRoutes().add(flightRoute);
             
             em.flush();
 
@@ -85,13 +78,41 @@ public class FlightRouteSessionBean implements FlightRouteSessionBeanRemote, Fli
     @Override
     public List<FlightRoute> retrieveAllFlightRoutes()
     {
-        /*Query query = em.createQuery("SELECT f FROM FlightRoute f WHERE (f.originAirport = :originAirport AND f.destinationAirport = :destinationAirport) OR " +
-                                     "(f.originAirport = :destinationAirport AND f.destinationAirport = :originAirport) " +
-                                     "ORDER BY f.originAirport ASC");*/
-        
-        Query query = em.createQuery("SELECT fr FROM FlightRoute fr");
+        Query query = em.createQuery("SELECT fr FROM FlightRoute fr " +
+                                     "ORDER BY fr.airportOrigin.airportName ASC");
         
         return query.getResultList();
+    }
+    
+    @Override
+    public void updateFlightRoute(FlightRoute flightRoute) throws FlightRouteNotFoundException
+    {   
+        if(flightRoute != null && flightRoute.getFlightRouteId() != null)
+        {
+            FlightRoute flightRouteToUpdate = retrieveFlightRouteByFlightRouteId(flightRoute.getFlightRouteId());
+            
+                flightRouteToUpdate.setAirportDestination(flightRoute.getAirportDestination());
+                flightRouteToUpdate.setAirportOrigin(flightRoute.getAirportOrigin());
+            
+            if(flightRoute.getComplementaryFlightRoute() != null) {
+                FlightRoute complementaryFlight = retrieveFlightRouteByFlightRouteId(flightRoute.getComplementaryFlightRoute().getFlightRouteId());
+                flightRouteToUpdate.setComplementaryFlightRoute(complementaryFlight);
+            }
+        }
+        else
+        {
+            throw new FlightRouteNotFoundException("Flight Route ID not provided for flight to be updated");
+        }
+    }
+    
+    public void DeleteRoute(FlightRoute flightRoute) {
+        try {
+            FlightRoute flightRouteToDelete = retrieveFlightRouteByFlightRouteId(flightRoute.getFlightRouteId());
+            em.remove(flightRouteToDelete);
+        }
+        catch (FlightRouteNotFoundException ex) {
+            System.out.println("Flight route is not found!");
+        }
     }
     
     @Override
@@ -99,14 +120,22 @@ public class FlightRouteSessionBean implements FlightRouteSessionBeanRemote, Fli
     {
         FlightRoute flightRouteToRemove = retrieveFlightRouteByFlightRouteId(flightRouteId);
         
-        if(flightRouteToRemove.getAirportOrigin() == null && flightRouteToRemove.getAirportDestination() == null)
+        if(flightRouteToRemove.getFlights().isEmpty())
         {
+            if(flightRouteToRemove.getIsMain() == true && flightRouteToRemove.getComplementaryFlightRoute() != null) {
+                FlightRoute complementaryFlightRoute = retrieveFlightRouteByFlightRouteId(flightRouteToRemove.getComplementaryFlightRoute().getFlightRouteId());
+                em.remove(complementaryFlightRoute);
+            } else if (flightRouteToRemove.getIsMain() == false) {
+                FlightRoute mainFlightRoute = retrieveFlightRouteByFlightRouteId(flightRouteToRemove.getComplementaryFlightRoute().getFlightRouteId());
+                mainFlightRoute.setComplementaryFlightRoute(null);
+            }
+            
             em.remove(flightRouteToRemove);
         }
         else
         {
             flightRouteToRemove.setEnabled(Boolean.FALSE);
-            throw new DeleteFlightRouteException("Flight Route ID " + flightRouteId + " is associated with existing airports and cannot be deleted!");
+            throw new DeleteFlightRouteException("Flight Route ID " + flightRouteId + " is associated with existing flights and cannot be deleted!");
         }
     }
     

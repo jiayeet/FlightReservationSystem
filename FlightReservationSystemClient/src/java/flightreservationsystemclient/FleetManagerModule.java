@@ -93,6 +93,9 @@ public class FleetManagerModule {
         System.out.print("Enter Aircraft Configuration Name> ");
         newAircraftConfiguration.setName(scanner.nextLine().trim());
         Integer numOfCabinClass = 0;
+        System.out.print("Enter Maximum Capacity of the Aircraft Configuration> ");
+        int maximumCapacity = scanner.nextInt();
+        newAircraftConfiguration.setMaximumCapacity(maximumCapacity);
         
         do 
         {
@@ -111,8 +114,12 @@ public class FleetManagerModule {
             scanner.nextLine().trim();
         } while(numOfCabinClass < 1 || numOfCabinClass > 4);
         
+        
+        int cabinsCapacity = 0;
+        
         for (int i = 1; i <= numOfCabinClass; i++)
         {
+            
             CabinClass newCabinClass = new CabinClass();
             
             System.out.println("Cabin Class " + i);
@@ -143,11 +150,17 @@ public class FleetManagerModule {
             scanner.nextLine();
             System.out.print("Enter Seating Configuration per Column> ");
             newCabinClass.setSeatConfiguration(scanner.nextLine().trim());
+            System.out.print("Enter Maximum Seating Capacity> ");
+            newCabinClass.setMaxCapacity(scanner.nextInt()); 
+            cabinsCapacity += newCabinClass.getMaxCapacity();
             
             // TODO - Insert Bean Validation try-catch block here
             
-            newAircraftConfiguration.getCabinClasses().add(newCabinClass);
-            
+            if (cabinsCapacity <= maximumCapacity) {
+                newAircraftConfiguration.getCabinClasses().add(newCabinClass);
+            } else {
+                System.out.println("Invalid option, please try again! The new cabin class seat capacity exceeds the capacity of the aircraft configuration\n");
+            }
         }
         
         try
