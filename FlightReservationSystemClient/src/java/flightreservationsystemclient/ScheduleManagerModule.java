@@ -372,6 +372,7 @@ public class ScheduleManagerModule {
         int layoverDuration = 0;
         String moreFlightSchedule = "";
         String createComplementPlan = "";
+        Long complementaryFlightSchedulePlanId = 0l;
         
         System.out.println("*** Flight Management System :: Schedule Manager :: Create Flight Schedule Plan ***\n\n");
         System.out.print("Enter Flight Number> ");
@@ -668,7 +669,7 @@ public class ScheduleManagerModule {
                     layoverDuration = scanner.nextInt();
                     scanner.nextLine();
                     
-                    Long complementaryFlightSchedulePlanId = flightSchedulePlanSessionBeanRemote.createComplementaryFlightSchedulePlan(flightSchedulePlanId, layoverDuration, complementaryReturnFlight.getFlightNumber());
+                    complementaryFlightSchedulePlanId = flightSchedulePlanSessionBeanRemote.createComplementaryFlightSchedulePlan(flightSchedulePlanId, layoverDuration, complementaryReturnFlight.getFlightNumber());
                     System.out.println("Complementary Flight Schedule Plan " + complementaryFlightSchedulePlanId + " successfully created for return flight " + complementaryReturnFlight.getFlightNumber() + "!");
                 }
                 else
@@ -710,8 +711,14 @@ public class ScheduleManagerModule {
                 
             }
             
-            flightSchedulePlanSessionBeanRemote.linkFlightSchedulePlanToFares(fares, flightSchedulePlanId);
+            
+            flightSchedulePlanSessionBeanRemote.linkFlightSchedulePlanToFares(fares, flightSchedulePlanId, false);
             System.out.println("Successfully linked flight schedule plan to fares!");
+            
+            if (complementaryFlightSchedulePlanId > 0l)
+            {
+                flightSchedulePlanSessionBeanRemote.linkFlightSchedulePlanToFares(fares, complementaryFlightSchedulePlanId, true);
+            }
         
         }
         catch(FlightNotFoundException ex)
@@ -739,28 +746,75 @@ public class ScheduleManagerModule {
     
     private void doViewAllFlightSchedulePlans()
     {
+        Scanner scanner = new Scanner(System.in);
+        SimpleDateFormat outputDateFormat = new SimpleDateFormat("dd MMM yy hh:mm a");
+        
+        System.out.println("\n*** Flight Management System :: Schedule Manager :: View All Flight Schedule Plans ***\n");
+        
+        try
+        {
+            List<FlightSchedulePlan> flightSchedulePlans = flightSchedulePlanSessionBeanRemote.retrieveAllFlightSchedulePlans();
+            System.out.printf("%23s%16s%18s%30s\n", "Flight Schedule Plan ID", "Flight Number", "Schedule Type", "First Departure Date/Time");
+
+            for(FlightSchedulePlan flightSchedulePlan : flightSchedulePlans)
+            {
+                List<FlightSchedule> flightSchedules = flightSchedulePlanSessionBeanRemote.retrieveFlightSchedulesByFlightSchedulePlanId(flightSchedulePlan.getFlightSchedulePlanId());
+                Date earliestDepartureDate = flightSchedules.get(0).getDepartureDateTime();
+                System.out.printf("%23s%16s%18s%30s\n", flightSchedulePlan.getFlightSchedulePlanId(), flightSchedulePlan.getFlightNumber(), flightSchedulePlan.getFlightScheduleType().toString(), outputDateFormat.format(earliestDepartureDate));
+                
+                if (flightSchedulePlan.getComplementaryFlightSchedulePlan() != null)
+                {
+                    FlightSchedulePlan complementaryFlightSchedulePlan = flightSchedulePlan.getComplementaryFlightSchedulePlan();
+                    List<FlightSchedule> complementaryFlightSchedules = flightSchedulePlanSessionBeanRemote.retrieveFlightSchedulesByFlightSchedulePlanId(complementaryFlightSchedulePlan.getFlightSchedulePlanId());
+                    Date earliestComplementaryDepartureDate = complementaryFlightSchedules.get(0).getDepartureDateTime();
+                    System.out.printf("%23s%16s%18s%30s\n", complementaryFlightSchedulePlan.getFlightSchedulePlanId(), complementaryFlightSchedulePlan.getFlightNumber(), complementaryFlightSchedulePlan.getFlightScheduleType().toString(), outputDateFormat.format(earliestComplementaryDepartureDate));
+                }
+            }
+        
+            System.out.print("Press any key to continue...> ");
+            scanner.nextLine();
+        }
+        catch(FlightSchedulePlanNotFoundException ex)
+        {
+            System.out.println("Error when retrieving all flight schedule plans: " + ex.getMessage() + "!\n");
+        }
         
     }
     
     private void doViewFlightSchedulePlanDetails() {
         Scanner scanner = new Scanner(System.in);
         Integer response = 0;
+        SimpleDateFormat outputDateFormat = new SimpleDateFormat("dd MMM yy hh:mm a");
         
         System.out.println("*** Flight Management System :: Schedule Manager :: View Flight Schedule Plan Details ***\n");
         System.out.print("Enter Flight Schedule Plan ID> ");
         Long flightSchedulePlanId = scanner.nextLong();
+        scanner.nextLine();
         
         try
         {
             FlightSchedulePlan flightSchedulePlan = flightSchedulePlanSessionBeanRemote.retrieveFlightSchedulePlanByFlightSchedulePlanId(flightSchedulePlanId);
+            List<FlightSchedule> flightSchedules = flightSchedulePlanSessionBeanRemote.retrieveFlightSchedulesByFlightSchedulePlanId(flightSchedulePlanId);
+            Flight flight = flightSessionBeanRemote.retrieveFlightByFlightNumber(flightSchedulePlan.getFlightNumber());
+            List<Fare> fares = flightSchedulePlanSessionBeanRemote.retrieveFaresByFlightSchedulePlanId(flightSchedulePlanId);
             
-            //TO CONFIGURE BASED ON BUSINESS RULES
-            /*System.out.printf("%8s%20s%20s%15s%20s%20s\n", "Flight ID", "AITA Origin Code", "AITA Destination Code");
-            System.out.printf("%8s%20s%20s\n", flight.getFlightId().toString(), flight.getFlightRoute().getAirportOrigin().getIataAirportCode(), flight.getFlightRoute().getAirportDestination().getIataAirportCode());
-            System.out.printf("%8s%20s%20s%15s%20s%20s\n", "Cabin Classes", "Number of Available Seats");
-            for (int i = 0; i < flight.getAircraftConfiguration().getCabinClasses().size(); i++) {
-                System.out.printf("%20s%20s\n", flight.getAircraftConfiguration().getCabinClasses().get(i).getCabinClassType().toString(), flight.getAircraftConfiguration().getCabinClasses().get(i).calculateTotalSeats());
-            }*/
+            System.out.printf("%23s%16s%25s\n", "Flight Schedule Plan ID", "Flight Number", "Origin - Destination");
+            System.out.printf("%23s%16s%25s\n", flightSchedulePlan.getFlightSchedulePlanId(), flightSchedulePlan.getFlightNumber(), flight.getFlightRoute().originIATA() + "-" + flight.getFlightRoute().destinationIATA());
+            
+            System.out.printf("%11s%20s%15s\n", "Cabin Class", "Fare Basis Code", "Fare Amount");
+            
+            for (Fare fare : fares)
+            {
+                System.out.printf("%11s%20s%15s\n", fare.getCabinClass().getCabinClassType().toString(), fare.getFareBasisCode(), fare.getFareAmount());
+            }
+            
+            System.out.printf("%19s%22s%20s%20s\n", "Flight Schedule ID", "Departure Date Time", "Arrival Date Time", "Flight Duration");
+            
+            for (FlightSchedule flightSchedule : flightSchedules)
+            {
+                System.out.printf("%19s%22s%20s%20s\n\n", flightSchedule.getFlightScheduleId(), outputDateFormat.format(flightSchedule.getArrivalDateTime()), outputDateFormat.format(flightSchedule.getDepartureDateTime()), flightSchedule.getFlightDurationHours() + " Hours " + flightSchedule.getFlightDurationMinutes() + " Minutes");
+            }
+
             
             System.out.println("------------------------");
             System.out.println("1: Update Flight Schedule Plan");
@@ -778,17 +832,17 @@ public class ScheduleManagerModule {
                 doDeleteFlightSchedulePlan(flightSchedulePlan);
             }
         }
-        catch(FlightSchedulePlanNotFoundException ex)
+        catch(FlightSchedulePlanNotFoundException | FlightNotFoundException ex)
         {
             System.out.println("An error has occurred while retrieving flight schedule plan: " + ex.getMessage() + "\n");
         }
     }
     
     private void doUpdateFlightSchedulePlan(FlightSchedulePlan flightSchedulePlan) {
-        
+        System.out.println("\n*** Flight Management System :: Schedule Manager :: Update Flight Schedule Plan ***\n");
     }
     
     private void doDeleteFlightSchedulePlan(FlightSchedulePlan flightSchedulePlan) {
-        
+        System.out.println("\n*** Flight Management System :: Schedule Manager :: Delete Flight Schedule Plan ***\n");
     }
 }

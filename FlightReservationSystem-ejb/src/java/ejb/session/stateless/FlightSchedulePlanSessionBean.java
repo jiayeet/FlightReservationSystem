@@ -10,6 +10,7 @@ import entity.Flight;
 import entity.FlightSchedule;
 import entity.FlightSchedulePlan;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import javax.annotation.Resource;
@@ -43,6 +44,8 @@ public class FlightSchedulePlanSessionBean implements FlightSchedulePlanSessionB
     
     @EJB
     private FlightSessionBeanLocal flightSessionBeanLocal;
+    @EJB
+    private AircraftConfigurationSessionBeanLocal aircraftConfigurationSessionBeanLocal;
 
     
     public FlightSchedulePlanSessionBean() 
@@ -245,7 +248,7 @@ public class FlightSchedulePlanSessionBean implements FlightSchedulePlanSessionB
     @Override
     public List<FlightSchedulePlan> retrieveAllFlightSchedulePlans()
     {      
-        Query query = em.createQuery("Select fsp FROM FlightSchedulePlan fsp");
+        Query query = em.createQuery("SELECT fsp FROM FlightSchedulePlan fsp WHERE fsp.mainFlightSchedulePlan IS NULL ORDER BY (SELECT MIN(fs.departureDateTime) FROM fsp.flightSchedules fs) ASC");
         
         return query.getResultList();
     }
@@ -258,13 +261,50 @@ public class FlightSchedulePlanSessionBean implements FlightSchedulePlanSessionB
         if(flightSchedulePlan != null)
         {
             // Lazily Load to-Many associations
-            flightSchedulePlan.getFlightSchedules();
-            
+            flightSchedulePlan.getFlightSchedules().size();
             return flightSchedulePlan;
         }
         else
         {
             throw new FlightSchedulePlanNotFoundException("Flight Schedule Plan ID " + flightSchedulePlanId + " does not exist!");
+        }
+    }
+    
+    
+    @Override
+    public List<FlightSchedule> retrieveFlightSchedulesByFlightSchedulePlanId(Long flightSchedulePlanId) throws FlightSchedulePlanNotFoundException
+    {
+        FlightSchedulePlan flightSchedulePlan = em.find(FlightSchedulePlan.class, flightSchedulePlanId);
+        
+        if (flightSchedulePlan != null)
+        {
+            Query query = em.createQuery("SELECT fs FROM FlightSchedulePlan fsp JOIN fsp.flightSchedules fs WHERE fsp.flightSchedulePlanId = :inFlightSchedulePlanId ORDER BY fs.departureDateTime ASC");
+            query.setParameter("inFlightSchedulePlanId", flightSchedulePlanId);
+            
+            return query.getResultList();
+        }
+        else
+        {
+            throw new FlightSchedulePlanNotFoundException("Flight Schedule Plan ID " + flightSchedulePlanId + " does not exist!");
+        }
+        
+    }
+    
+    @Override
+    public List<Fare> retrieveFaresByFlightSchedulePlanId(Long flightSchedulePlanId) throws FlightSchedulePlanNotFoundException
+    {
+        FlightSchedulePlan flightSchedulePlan = em.find(FlightSchedulePlan.class, flightSchedulePlanId);
+        
+        if (flightSchedulePlan != null)
+        {
+            Query query = em.createQuery("SELECT fa FROM FlightSchedulePlan fsp JOIN fsp.fares fa JOIN fa.cabinClass cc WHERE fsp.flightSchedulePlanId = :inFlightSchedulePlanId ORDER BY cc.cabinClassType");
+            query.setParameter("inFlightSchedulePlanId", flightSchedulePlanId);
+            
+            return query.getResultList();
+        }
+        else
+        {
+            throw new FlightSchedulePlanNotFoundException("Flight Schedule Plan Id " + flightSchedulePlanId + " does not exist!");
         }
     }
     
@@ -305,10 +345,12 @@ public class FlightSchedulePlanSessionBean implements FlightSchedulePlanSessionB
     }
     
     @Override
-    public void linkFlightSchedulePlanToFares(List<Fare> fares, Long flightSchedulePlanId) throws DuplicateFareBasisCodeException, FlightSchedulePlanNotFoundException
+    public void linkFlightSchedulePlanToFares(List<Fare> fares, Long flightSchedulePlanId, boolean isComplementary) throws DuplicateFareBasisCodeException, FlightNotFoundException, FlightSchedulePlanNotFoundException
     {
         FlightSchedulePlan flightSchedulePlan = retrieveFlightSchedulePlanByFlightSchedulePlanId(flightSchedulePlanId);
-
+        Flight flight = flightSessionBeanLocal.retrieveFlightByFlightNumber(flightSchedulePlan.getFlightNumber());
+        // List<CabinClass> cabinClasses = aircraftConfigurationSessionBeanLocal.retrieveCabinClassesByAircraftConfigurationId(flight.getAircraftConfiguration().getAircraftConfigurationId());
+        
         List<String> fareBasisCodes = new ArrayList<>();
         
         for (Fare fare : fares)
@@ -323,17 +365,27 @@ public class FlightSchedulePlanSessionBean implements FlightSchedulePlanSessionB
             fareBasisCodes.add(fareBasisCode);
         }
         
-        for (Fare fare : fares)
+        if (!isComplementary)
         {
-            em.persist(fares);
-            flightSchedulePlan.getFares().add(fare);
-        }
-        
-        // Check if complementary flight schedule plan exists
-        if (flightSchedulePlan.getComplementaryFlightSchedulePlan() != null)
+            for (Fare fare : fares)
+            {
+                em.persist(fare);
+                flightSchedulePlan.getFares().add(fare);
+            }
+            
+        } 
+        else
         {
-            flightSchedulePlan.getComplementaryFlightSchedulePlan().getFares().addAll(fares);
-            System.out.println("Successfully linked fares to complementary flight schedule plan " + flightSchedulePlan.getComplementaryFlightSchedulePlan().getFlightSchedulePlanId());
+            for (Fare fare : fares)
+            {
+                Fare newComplementaryFare = new Fare();
+                newComplementaryFare.setCabinClass(fare.getCabinClass());
+                newComplementaryFare.setFareAmount(fare.getFareAmount());
+                newComplementaryFare.setFareBasisCode(fare.getFareBasisCode());
+                
+                em.persist(newComplementaryFare);
+                flightSchedulePlan.getFares().add(newComplementaryFare);
+            }
         }
     }
 }

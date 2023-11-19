@@ -6,6 +6,7 @@ package flightreservationsystemcustomerclient;
 
 import ejb.session.stateless.CustomerSessionBeanRemote;
 import ejb.session.stateless.FlightReservationSessionBeanRemote;
+import ejb.session.stateless.FlightSchedulePlanSessionBeanRemote;
 import ejb.session.stateless.FlightTicketSessionBeanRemote;
 import ejb.session.stateless.PassengerSessionBeanRemote;
 import entity.CabinClass;
@@ -39,7 +40,7 @@ public class MainApp {
     private PassengerSessionBeanRemote passengerSessionBeanRemote;
     private FlightReservationSessionBeanRemote flightReservationSessionBeanRemote;
     private FlightTicketSessionBeanRemote flightTicketSessionBeanRemote;
-    //private FlightSchedulePlanSessionBeanRemote flightSchedulePlanSessionBeanRemote;
+    private FlightSchedulePlanSessionBeanRemote flightSchedulePlanSessionBeanRemote;
     //private FlightScheduleSessionBean flightScheduleSessionBean;
     
     private final ValidatorFactory validatorFactory;
@@ -52,14 +53,14 @@ public class MainApp {
     }
     
     MainApp(CustomerSessionBeanRemote customerSessionBeanRemote, PassengerSessionBeanRemote passengerSessionBeanRemote, FlightReservationSessionBeanRemote flightReservationSessionBeanRemote,
-            FlightTicketSessionBeanRemote flightTicketSessionBeanRemote /*, flightSchedulePlanSessionBeanRemote flightSchedulePlanSessionBeanRemote, FlightScheduleSessionBean flightScheduleSessionBean*/) {
+            FlightTicketSessionBeanRemote flightTicketSessionBeanRemote, FlightSchedulePlanSessionBeanRemote flightSchedulePlanSessionBeanRemote/*, FlightScheduleSessionBean flightScheduleSessionBean*/) {
         this();
         this.customerSessionBeanRemote = customerSessionBeanRemote;
         this.currentCustomer = new Customer();
         this.passengerSessionBeanRemote = passengerSessionBeanRemote;
         this.flightReservationSessionBeanRemote = flightReservationSessionBeanRemote;
         this.flightTicketSessionBeanRemote = flightTicketSessionBeanRemote;
-        //this.flightSchedulePlanSessionBeanRemote = flightSchedulePlanSessionBeanRemote;
+        this.flightSchedulePlanSessionBeanRemote = flightSchedulePlanSessionBeanRemote;
         //this.flightScheduleSessionBean = flightScheduleSessionBean;
     }
     
@@ -71,10 +72,11 @@ public class MainApp {
         System.out.println("*** Welcome to Flight Reservation System ***\n");
         System.out.println("1: Register As Customer");
         System.out.println("2: Login");
-        System.out.println("3: Exit\n");
+        System.out.println("3: Search Flight");
+        System.out.println("4: Exit\n");
         response = 0;
 
-            while (response < 1 || response > 3) {
+            while (response < 1 || response > 4) {
                 System.out.print("> ");
 
                 response = scanner.nextInt();
@@ -92,13 +94,15 @@ public class MainApp {
                         System.out.println("Invalid login credential: " + ex.getMessage() + "\n");
                     }
                 } else if (response == 3) {
+                    searchFlight();
+                } else if (response == 4) {
                     break;
                 } else {
                     System.out.println("Invalid option, please try again!\n");
                 }
             }
 
-            if (response == 3) {
+            if (response == 4) {
                 break;
             }
         }

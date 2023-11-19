@@ -61,10 +61,10 @@ public class FlightSchedulePlan implements Serializable {
     @OneToMany
     private List<FlightSchedule> flightSchedules;
     
-    @OneToOne(mappedBy = "mainFlightSchedulePlan")
+    @OneToOne
     private FlightSchedulePlan mainFlightSchedulePlan;
     
-    @OneToOne
+    @OneToOne(mappedBy = "mainFlightSchedulePlan")
     private FlightSchedulePlan complementaryFlightSchedulePlan;
     
     

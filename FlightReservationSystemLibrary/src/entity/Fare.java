@@ -33,8 +33,6 @@ public class Fare implements Serializable {
     @JoinColumn(nullable = false)
     private CabinClass cabinClass;
     
-    //@ManyToMany
-    //private List<FlightSchedulePlan> flightSchedulePlans;
 
     public Long getFareId() {
         return fareId;
