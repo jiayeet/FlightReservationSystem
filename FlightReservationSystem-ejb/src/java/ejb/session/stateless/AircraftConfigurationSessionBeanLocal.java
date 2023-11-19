@@ -28,4 +28,5 @@ public interface AircraftConfigurationSessionBeanLocal {
 
     public List<CabinClass> retrieveCabinClassesByAircraftConfigurationId(Long aircraftConfigurationId);
     
+    public AircraftConfiguration retrieveAircraftConfigurationByName(String name) throws AircraftConfigurationNotFoundException;
 }

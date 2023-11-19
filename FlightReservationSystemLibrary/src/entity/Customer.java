@@ -62,8 +62,8 @@ public class Customer implements Serializable {
     @JoinColumn(name = "customerId")
     private List<FlightReservation> flightReservations;
     
-    @OneToOne(optional = false)
-    @JoinColumn(nullable = false)
+    @OneToOne
+    @JoinColumn(name = "creditCardRecordId")
     private CreditCardRecord creditCardRecord;
     
     /*@OneToMany(mappedBy = "customer")

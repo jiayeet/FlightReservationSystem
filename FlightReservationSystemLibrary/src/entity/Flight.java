@@ -87,7 +87,7 @@ public class Flight implements Serializable {
     /**
      * @param flightSchedulePlans the flightSchedulePlans to set
      */
-    public void setFlightSchedulePlans(List<FlightSchedulePlan> flightSchedulePlans) {
+    public void setFlightSchedulePlan(List<FlightSchedulePlan> flightSchedulePlans) {
         this.flightSchedulePlans = flightSchedulePlans;
     }
     
@@ -192,7 +192,7 @@ public class Flight implements Serializable {
      * @param enabled the enabled to set
      */
     public void setIsMain(Boolean enabled) {
-        this.isMain = isMain;
+        this.isMain = enabled;
     }
     
 }

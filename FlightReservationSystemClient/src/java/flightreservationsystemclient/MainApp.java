@@ -7,6 +7,7 @@ package flightreservationsystemclient;
 import ejb.session.stateless.AirportSessionBeanRemote;
 import ejb.session.stateless.AircraftConfigurationSessionBeanRemote;
 import ejb.session.stateless.EmployeeSessionBeanRemote;
+import ejb.session.stateless.FlightReservationSessionBeanRemote;
 import ejb.session.stateless.FlightRouteSessionBeanRemote;
 import ejb.session.stateless.FlightSchedulePlanSessionBeanRemote;
 import ejb.session.stateless.FlightScheduleSessionBeanRemote;
@@ -29,6 +30,7 @@ public class MainApp {
     private FlightSessionBeanRemote flightSessionBeanRemote;
     private FlightSchedulePlanSessionBeanRemote flightSchedulePlanSessionBeanRemote;
     private FlightScheduleSessionBeanRemote flightScheduleSessionBeanRemote;
+    private FlightReservationSessionBeanRemote flightReservationSessionBeanRemote;
     
     private SalesManagerModule salesManagerModule;
     private FleetManagerModule fleetManagerModule;
@@ -40,7 +42,7 @@ public class MainApp {
     public MainApp() {
     }
     
-    public MainApp(EmployeeSessionBeanRemote employeeSessionBeanRemote, AirportSessionBeanRemote airportSessionBeanRemote, AircraftConfigurationSessionBeanRemote aircraftConfigurationSessionBeanRemote, FlightRouteSessionBeanRemote flightRouteSessionBeanRemote, FlightSessionBeanRemote flightSessionBeanRemote, FlightSchedulePlanSessionBeanRemote flightSchedulePlanSessionBeanRemote, FlightScheduleSessionBeanRemote flightScheduleSessionBeanRemote) {
+    public MainApp(EmployeeSessionBeanRemote employeeSessionBeanRemote, AirportSessionBeanRemote airportSessionBeanRemote, AircraftConfigurationSessionBeanRemote aircraftConfigurationSessionBeanRemote, FlightRouteSessionBeanRemote flightRouteSessionBeanRemote, FlightSessionBeanRemote flightSessionBeanRemote, FlightSchedulePlanSessionBeanRemote flightSchedulePlanSessionBeanRemote, FlightScheduleSessionBeanRemote flightScheduleSessionBeanRemote, FlightReservationSessionBeanRemote flightReservationSessionBeanRemote) {
         this.employeeSessionBeanRemote = employeeSessionBeanRemote;
         this.airportSessionBeanRemote = airportSessionBeanRemote;
         this.flightRouteSessionBeanRemote = flightRouteSessionBeanRemote;
@@ -48,6 +50,7 @@ public class MainApp {
         this.flightSessionBeanRemote = flightSessionBeanRemote;
         this.flightSchedulePlanSessionBeanRemote = flightSchedulePlanSessionBeanRemote;
         this.flightScheduleSessionBeanRemote = flightScheduleSessionBeanRemote;
+        this.flightReservationSessionBeanRemote = flightReservationSessionBeanRemote;
     }
     
     public void runApp()
@@ -72,7 +75,7 @@ public class MainApp {
                         System.out.println("Login successful!\n");
 
                         fleetManagerModule = new FleetManagerModule(aircraftConfigurationSessionBeanRemote);
-                        salesManagerModule = new SalesManagerModule();
+                        salesManagerModule = new SalesManagerModule(flightSessionBeanRemote, flightSchedulePlanSessionBeanRemote, flightReservationSessionBeanRemote, flightScheduleSessionBeanRemote);
                         routePlannerModule = new RoutePlannerModule(airportSessionBeanRemote, flightRouteSessionBeanRemote);
                         scheduleManagerModule = new ScheduleManagerModule(flightRouteSessionBeanRemote, flightSessionBeanRemote, aircraftConfigurationSessionBeanRemote, flightScheduleSessionBeanRemote, flightSchedulePlanSessionBeanRemote);
                         
@@ -151,12 +154,16 @@ public class MainApp {
                 }
             } else if (currentEmployee.getUserRole() == EmployeeUserRoleEnum.FLEETMANAGER) {
                 fleetManagerModule.fleetManagerMenu();
+                break;
             } else if (currentEmployee.getUserRole() == EmployeeUserRoleEnum.ROUTEPLANNER) {
                 routePlannerModule.routePlannerMenu();
+                break;
             } else if (currentEmployee.getUserRole() == EmployeeUserRoleEnum.SCHEDULEMANAGER) {
                 scheduleManagerModule.scheduleManagerMenu();
+                break;
             } else if (currentEmployee.getUserRole() == EmployeeUserRoleEnum.SYSTEMADMINISTRATOR) {
                 salesManagerModule.salesManagerMenu();
+                break;
             } else {
                 System.out.println("There is no such user role!");
             }

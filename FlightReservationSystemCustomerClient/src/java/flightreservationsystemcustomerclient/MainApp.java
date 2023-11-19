@@ -4,6 +4,7 @@
  */
 package flightreservationsystemcustomerclient;
 
+import ejb.session.stateless.CreditCardSessionBeanRemote;
 import ejb.session.stateless.CustomerSessionBeanRemote;
 import ejb.session.stateless.FlightReservationSessionBeanRemote;
 import ejb.session.stateless.FlightSchedulePlanSessionBeanRemote;
@@ -15,6 +16,9 @@ import entity.Customer;
 import entity.FlightReservation;
 import entity.FlightTicket;
 import entity.Passenger;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
@@ -22,9 +26,9 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import util.enumeration.CabinClassType;
 import util.exception.CustomerUsernameExistException;
 import util.exception.FlightReservationNotFoundException;
+import util.exception.FlightTicketIdExistenceException;
 import util.exception.InputDataValidationException;
 import util.exception.InvalidLoginCredentials;
 import util.exception.UnknownPersistenceException;
@@ -42,6 +46,8 @@ public class MainApp {
     private FlightTicketSessionBeanRemote flightTicketSessionBeanRemote;
     private FlightSchedulePlanSessionBeanRemote flightSchedulePlanSessionBeanRemote;
     //private FlightScheduleSessionBean flightScheduleSessionBean;
+    private FlightReservationSessionBeanRemote flightReservationSessionBean;
+    private CreditCardSessionBeanRemote creditCardSessionBeanRemote;
     
     private final ValidatorFactory validatorFactory;
     private final Validator validator;
@@ -53,15 +59,25 @@ public class MainApp {
     }
     
     MainApp(CustomerSessionBeanRemote customerSessionBeanRemote, PassengerSessionBeanRemote passengerSessionBeanRemote, FlightReservationSessionBeanRemote flightReservationSessionBeanRemote,
-            FlightTicketSessionBeanRemote flightTicketSessionBeanRemote, FlightSchedulePlanSessionBeanRemote flightSchedulePlanSessionBeanRemote/*, FlightScheduleSessionBean flightScheduleSessionBean*/) {
+            FlightTicketSessionBeanRemote flightTicketSessionBeanRemote, FlightSchedulePlanSessionBeanRemote flightSchedulePlanSessionBeanRemote, 
+            CreditCardSessionBeanRemote creditCardRecordSessionBeanRemote/*, FlightScheduleSessionBean flightScheduleSessionBean*/)
+    {
         this();
+        if (customerSessionBeanRemote == null) {
+            System.out.println("customersessionbeanremote is null");
+        }
         this.customerSessionBeanRemote = customerSessionBeanRemote;
+        if (this.customerSessionBeanRemote == null) {
+            System.out.println("this.custommersessionbeanremote is null");
+        }
         this.currentCustomer = new Customer();
         this.passengerSessionBeanRemote = passengerSessionBeanRemote;
         this.flightReservationSessionBeanRemote = flightReservationSessionBeanRemote;
         this.flightTicketSessionBeanRemote = flightTicketSessionBeanRemote;
         this.flightSchedulePlanSessionBeanRemote = flightSchedulePlanSessionBeanRemote;
         //this.flightScheduleSessionBean = flightScheduleSessionBean;
+        this.creditCardSessionBeanRemote = creditCardSessionBeanRemote;
+        
     }
     
     public void runApp() {
@@ -135,8 +151,13 @@ public class MainApp {
 
         if (constraintViolations.isEmpty()) {
             try {
-                Long newCustomerId = customerSessionBeanRemote.createNewCustomer(newCustomer);
-                System.out.println("New customer created successfully!: " + newCustomerId + "\n");
+                if(customerSessionBeanRemote != null) {
+                    Long newCustomerId = customerSessionBeanRemote.createNewCustomer(newCustomer);
+                    System.out.println("New customer created successfully!: " + newCustomerId + "\n");
+                } else {
+                    System.out.println("New customer not created." + newCustomer.getAddress());
+                }
+                
             } catch (CustomerUsernameExistException ex) {
                 System.out.println("An error has occurred while registering the a new customer account: The username already exists!\n");
             } catch (UnknownPersistenceException ex) {
@@ -209,14 +230,17 @@ public class MainApp {
     
     private void searchFlight() {
         Scanner scanner = new Scanner(System.in);
+        SimpleDateFormat inputDateFormat = new SimpleDateFormat("dd MMM yy");
         String input = "";
         Integer tripType;
         String departureAirport = "";
         String destinationAirport = "";
-        String departureDate = "";
-        String returnDate = "";
-        int noOfPassengers;
+        Date departureDate;
+        Date returnDate;
+        int noOfPassengers = 0;
         Boolean directFlight;
+        Integer flightPreferenceType;
+        Integer cabinPreferenceType;
 
         System.out.println("*** Flight Reservation System :: Customer :: Search Flight ***\n");
         while (true) {
@@ -229,16 +253,17 @@ public class MainApp {
                 System.out.println("Invalid option, please try again!\n");
             }
         }
-        System.out.print("Enter departure airport> ");
+        try {
+        System.out.print("Enter Departure airport> ");
         departureAirport = scanner.nextLine().trim();
-        System.out.print("Enter destination airport> ");
+        System.out.print("Enter Destination airport> ");
         destinationAirport = scanner.nextLine().trim();
-        System.out.print("Enter departure date> ");
-        departureDate = scanner.nextLine().trim();
+        System.out.print("Enter Departure Date (dd mm yy)> ");
+        departureDate = inputDateFormat.parse(scanner.nextLine().trim());
         
         if (tripType == 2 && tripType == 3) {
             System.out.print("Enter return date> ");
-            returnDate = scanner.nextLine().trim();
+            returnDate = inputDateFormat.parse(scanner.nextLine().trim());
         }
         
         System.out.print("Enter number of passengers> ");
@@ -246,7 +271,7 @@ public class MainApp {
                 
         while (true) {
             System.out.print("Select preference for flight (1: Direct, 2: Connecting, 3: No Preference> ");
-            Integer flightPreferenceType = scanner.nextInt();
+            flightPreferenceType = scanner.nextInt();
             if (flightPreferenceType >= 1 && flightPreferenceType <= 3) {
                 break;
             } 
@@ -258,19 +283,25 @@ public class MainApp {
 
         while (true) {
             System.out.print("Select Cabin Class Type (1: First Class, 2: Business Class, 3: Premium Economy Class, 4: Economy Class)> ");
-            Integer cabinClassTypeInt = scanner.nextInt();
+            cabinPreferenceType = scanner.nextInt();
 
-            if (cabinClassTypeInt >= 1 && cabinClassTypeInt <= 4) {
-                CabinClass newCabinClass = new CabinClass();
-                newCabinClass.setCabinClassType(CabinClassType.values()[cabinClassTypeInt - 1]);
+            if (cabinPreferenceType >= 1 && cabinPreferenceType <= 4) {
                 break;
             } else {
                 System.out.println("Invalid option, please try again!\n");
             }
         }
+        }
+        catch(ParseException ex)
+        {
+            System.out.println("Invalid date/time input!\n");
+        }
         
-        //TODO - Flight Schedule printing
-        //TODO - Fare printing
+        //Get all flight schedules
+        //Iterate through the flight schedules and find dates that are on the day itself and print
+        //Iterate and find dates that depart 1/2/3 days before the required date
+        //Iterate and find dates that depart 1/2/3 after the required date
+        //print flightscheduleId, departuredatetime, arrivaldatetime, cabin classes available, seats available, price per passenger (lowest fare), price for all passengers 
         
         
         System.out.println("Would you like to reserve a flight? (Enter 'Y' for yes)> ");
@@ -282,10 +313,31 @@ public class MainApp {
     
     private void reserveFlight(int noOfPassengers) {
         Scanner scanner = new Scanner(System.in);
+        CabinClass cabinClassSelected;
+        FlightReservation flightReservation = new FlightReservation();
         
+        System.out.println("*** Flight Reservation System :: Customer :: Search Flight :: Reserve Flight ***\n");
         
+        System.out.println("***Select a Flight Schedule (Input the Flight Schedule Id) )>  ***\n");
+        //FlightSchedule flightSchedule = flightScheduleSessionBeanRemote.retrieveFlightSchedulebyFlightScheduleId(scanner.next(Long.valueOf(scanner.nextLine().trim()));
+        //Flight flight = flightSessionBeanRemote.retrieveFlightbyFlightNumber(flightSchedule.getFlightSchedulePlan().getFlightNumber());
+        //List<CabinClasses> cabinClasses = flight.getAircraftConfiguration().getCabinClasses();
+        //Inbound flights
+        //Outbound flights
         
-        //TODO - Flight Reservation Logic
+        System.out.print("Select Cabin Class Type (1: First Class, 2: Business Class, 3: Premium Economy Class, 4: Economy Class)> ");        
+        while (true) {
+            int cabinPreferenceType = scanner.nextInt();
+
+            if (cabinPreferenceType >= 1 && cabinPreferenceType <= 4) {
+                //cabinClassSelected = cabinClasses.getCabinClassType(CabinClassType.values()[cabinPreferenceType-1]);
+                break;
+            } else {
+                System.out.println("Invalid option, please try again!\n");
+            }
+        }
+        
+        //flightReservation.setCabinClasses(cabinClasses);
         
         for(int i = 0; i < noOfPassengers; i++) {
             Passenger passenger = new Passenger();
@@ -300,21 +352,39 @@ public class MainApp {
             System.out.print("Enter Passenger's Passport Number> ");
             passenger.setPassportNumber(scanner.nextLine().trim());
             
-            //Long passengerId = passengerSessionBeanRemote.createNewPassenger(passenger);
-            
             System.out.print("Enter Passenger's Seat Number> ");
             flightTicket.setSeatNumber(scanner.nextLine().trim());
             flightTicket.setPassenger(passenger);
             
-            //Bean Validation for Passenger
+            Set<ConstraintViolation<Passenger>>constraintViolations = validator.validate(passenger);
             
-            //flightTicket.setCabinClass(cabinClass);
+            //flightTicket.setCabinClass(cabinClassSelected);
             //flightTicket.setFlightReservation(flightReservation);
             //flightTicket.setFlightSchedule(flightSchedule);
             
-            //flightReservation.getFlightTickets().add(flightTicket);
-            //TO DO - Add in the association with customer and flight ticket
+            flightReservation.getFlightTickets().add(flightTicket);
+            
+            if (constraintViolations.isEmpty()) {
+            try {
+                Long newPassengerId = passengerSessionBeanRemote.createNewPassenger(passenger);
+                Long flightTicketId = flightTicketSessionBeanRemote.createNewFlightTicket(flightTicket);
+                System.out.println("Flight ticket of id: " + flightTicketId + " has been created!");
+            }
+            catch (UnknownPersistenceException ex) {
+                System.out.println("An unknown error has occurred while creating a new flight ticket!: " + ex.getMessage() + "\n");
+            } 
+            catch (FlightTicketIdExistenceException ex) {
+                System.out.println("An unknown error has occurred while creating the ticket!: " + ex.getMessage() + "\n");
+            } 
+            catch (InputDataValidationException ex) {
+                System.out.println(ex.getMessage() + "\n");
+            }
+            } else {
+                showInputDataValidationErrorsForPassenger(constraintViolations);
         }
+        }
+        Long flightReservationId = flightReservationSessionBeanRemote.createNewFlightReservation(flightReservation);
+        System.out.println("Flight ticket of id: " + flightReservationId + " has been created!");
     }
     
     private void checkOut() {
@@ -329,15 +399,27 @@ public class MainApp {
         newCreditCard.setCardNumber(scanner.nextLine().trim());
         System.out.print("Enter Pin> ");
         newCreditCard.setPin(scanner.nextLine().trim());
-        System.out.print("Enter Expiry Date> ");
-        //newCreditCard.setExpirationDate(scanner.nextLine().trim());
+        System.out.print("Enter Expiry Date (mm/yy) > ");
+        newCreditCard.setExpirationDate(scanner.nextLine().trim());
         System.out.print("Enter CVV> ");
         newCreditCard.setCVV(scanner.nextLine().trim());
         
-        //Input Data Validation for Credit Card
-        //Long creditCardId = creditCardSessionBeanRemote.createNewCreditCard();
+        Set<ConstraintViolation<CreditCardRecord>>constraintViolations = validator.validate(newCreditCard);
+        
+        if (constraintViolations.isEmpty()) {
+            try {
+                Long newCreditCardId = creditCardSessionBeanRemote.createNewCreditCard(newCreditCard);
+                System.out.println("New customer created successfully!: " + newCreditCardId + "\n");
+            }
+            catch (InputDataValidationException ex) {
+                System.out.println(ex.getMessage() + "\n");
+            }
+        } else {
+            showInputDataValidationErrorsForCreditCard(constraintViolations);
+        }
         
         currentCustomer.setCreditCardRecord(newCreditCard);
+        
         
         System.out.println("*** Checkout is successful! ***\n");
 
@@ -349,11 +431,11 @@ public class MainApp {
         System.out.println("*** Flight Reservation System :: Route Planner :: View All Flight Routes ***\n");
         
         List<FlightReservation> flightReservations = flightReservationSessionBeanRemote.retrieveAllFlightReservations();
-        System.out.printf("%8s%20s%20s\n", "Flight Route ID", "Origin AITA Code ", "Destination AITA Code");
+        System.out.printf("%8s\n", "Flight Reservation ID");
 
         for(FlightReservation flightReservation:flightReservations)
         {
-            //System.out.printf("%8s%20s%20s\n", flightRoute.getFlightRouteId(), flightRoute.getAirportOrigin().getIataAirportCode(), flightRoute.getAirportDestination().getIataAirportCode());
+            System.out.printf("%8s\n", flightReservation.getFlightReservationId());
         }
         
         System.out.print("Press any key to continue...> ");
@@ -371,12 +453,13 @@ public class MainApp {
         try
         {
             FlightReservation flightReservation = flightReservationSessionBeanRemote.retrieveFlightReservationByFlightReservationId(flightReservationId);
-            /*System.out.printf("%-15s%-25s%-25s\n", "Flight ID", "AITA Origin Code ", "AITA Destination Code");
-            System.out.printf("%-15s%-25s%-25s\n", flight.getFlightId().toString(), flight.getFlightRoute().getAirportOrigin().getIataAirportCode(), flight.getFlightRoute().getAirportDestination().getIataAirportCode());
-            System.out.printf("%-15s%-25s\n", "Cabin Classes", "Number of Available Seats");
-            for (int i = 0; i < flight.getAircraftConfiguration().getCabinClasses().size(); i++) {
-                System.out.printf("%-15s%-25s\n", flight.getAircraftConfiguration().getCabinClasses().get(i).getCabinClassType().toString(), flight.getAircraftConfiguration().getCabinClasses().get(i).getMaxCapacity());
-            }*/
+            System.out.printf("%-15s\n", "Flight Reservation ID");
+            System.out.printf("%-15s\n", flightReservation.getFlightReservationId().toString());
+            System.out.printf("%-15s%\n", "Passenger");
+            for (int i = 0; i < flightReservation.getFlightTickets().size(); i++) {
+                System.out.printf("%-15s%-25s\n", "Flight Ticket Id", "Seat Number");
+                System.out.printf("%-15s%-25s\n", flightReservation.getFlightTickets().get(i).getFlightTicketId(), flightReservation.getFlightTickets().get(i).getSeatNumber());
+            }
         }
         catch(FlightReservationNotFoundException ex)
         {
@@ -385,6 +468,42 @@ public class MainApp {
     }
     
     private void showInputDataValidationErrorsForCustomer(Set<ConstraintViolation<Customer>>constraintViolations)
+    {
+        System.out.println("\nInput data validation error!:");
+            
+        for(ConstraintViolation constraintViolation:constraintViolations)
+        {
+            System.out.println("\t" + constraintViolation.getPropertyPath() + " - " + constraintViolation.getInvalidValue() + "; " + constraintViolation.getMessage());
+        }
+
+        System.out.println("\nPlease try again......\n");
+    }
+    
+    private void showInputDataValidationErrorsForFlightTicket(Set<ConstraintViolation<FlightTicket>>constraintViolations)
+    {
+        System.out.println("\nInput data validation error!:");
+            
+        for(ConstraintViolation constraintViolation:constraintViolations)
+        {
+            System.out.println("\t" + constraintViolation.getPropertyPath() + " - " + constraintViolation.getInvalidValue() + "; " + constraintViolation.getMessage());
+        }
+
+        System.out.println("\nPlease try again......\n");
+    }
+    
+    private void showInputDataValidationErrorsForPassenger(Set<ConstraintViolation<Passenger>>constraintViolations)
+    {
+        System.out.println("\nInput data validation error!:");
+            
+        for(ConstraintViolation constraintViolation:constraintViolations)
+        {
+            System.out.println("\t" + constraintViolation.getPropertyPath() + " - " + constraintViolation.getInvalidValue() + "; " + constraintViolation.getMessage());
+        }
+
+        System.out.println("\nPlease try again......\n");
+    }
+    
+    private void showInputDataValidationErrorsForCreditCard(Set<ConstraintViolation<CreditCardRecord>>constraintViolations)
     {
         System.out.println("\nInput data validation error!:");
             

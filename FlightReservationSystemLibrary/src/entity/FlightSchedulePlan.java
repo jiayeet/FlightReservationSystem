@@ -6,21 +6,14 @@ package entity;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import util.enumeration.FlightScheduleType;
 
 /**
@@ -66,13 +59,12 @@ public class FlightSchedulePlan implements Serializable {
     
     @OneToOne(mappedBy = "mainFlightSchedulePlan")
     private FlightSchedulePlan complementaryFlightSchedulePlan;
-    
-    
+
+
+
     public FlightSchedulePlan() {
-        fares = new ArrayList<>();
         flightSchedules = new ArrayList<>();
     }
-    
     
     /**
      * @return the flightNumber
@@ -114,6 +106,20 @@ public class FlightSchedulePlan implements Serializable {
      */
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    /**
+     * @return the flight
+     */
+    public Flight getFlight() {
+        return flight;
+    }
+
+    /**
+     * @param flight the flight to set
+     */
+    public void setFlight(Flight flight) {
+        this.flight = flight;
     }
 
     /**
