@@ -143,7 +143,8 @@ public class FlightSessionBean implements FlightSessionBeanRemote, FlightSession
                         System.out.println("Complementary flight not provided for update");
                     }
                     
-                    //flightToUpdate.setFlightSchedules(flight.getFlightSchedules());
+                    flightToUpdate.setFlightSchedulePlan(flight.getFlightSchedulePlan());
+                    
                 } else {
                     throw new UpdateFlightException("Flight number of flight record to be updated does not match the existing record");
                 }
@@ -155,7 +156,7 @@ public class FlightSessionBean implements FlightSessionBeanRemote, FlightSession
     {
         Flight flightToRemove = retrieveFlightByFlightId(flightId);
         
-        if(flightToRemove.getFlightSchedulePlans().isEmpty())
+        if(flightToRemove.getFlightSchedulePlan() == null)
         {
             if(flightToRemove.getIsMain() == true && flightToRemove.getComplementaryFlight() != null) {
                 Flight complementaryFlight = retrieveFlightByFlightId(flightToRemove.getComplementaryFlight().getFlightId());
@@ -169,7 +170,7 @@ public class FlightSessionBean implements FlightSessionBeanRemote, FlightSession
         }
         else
         {
-            throw new DeleteFlightException("Flight ID " + flightId + " is associated with existing flight schedule plans and cannot be deleted!");
+            throw new DeleteFlightException("Flight ID " + flightId + " is associated with an existing flight schedule plan and cannot be deleted!");
         }
     }
     

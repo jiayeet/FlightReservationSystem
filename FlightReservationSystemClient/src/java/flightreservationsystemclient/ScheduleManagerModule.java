@@ -139,18 +139,7 @@ public class ScheduleManagerModule {
             newFlight.setFlightRoute(flightRoute);
             newFlight.setEnabled(Boolean.TRUE);
             newFlight.setIsMain(Boolean.TRUE);
-            
-            System.out.print("How many flight schedule plans would you like to add? ");
-            response = scanner.nextInt();
-            List<FlightSchedulePlan> flightSchedulePlans = new ArrayList<>();
-            
-            for (int i = 0; i < response; i++) {
-                System.out.print("Enter Flight Schedule Plan Id> ");
-                FlightSchedulePlan flightSchedulePlan = flightSchedulePlanSessionBeanRemote.retrieveFlightSchedulePlanByFlightSchedulePlanId(Long.valueOf(scanner.nextLine().trim()));
-                flightSchedulePlans.add(flightSchedulePlan);
-            }
-            
-            newFlight.setFlightSchedulePlans(flightSchedulePlans);
+
             
             Long newFlightId = flightSessionBeanRemote.createNewFlight(newFlight);
             System.out.println("New flight created successfully!: " + newFlightId + "\n");
@@ -174,12 +163,6 @@ public class ScheduleManagerModule {
                     complementaryFlight.setEnabled(Boolean.TRUE);
                     complementaryFlight.setIsMain(Boolean.FALSE);
                     complementaryFlight.setComplementaryFlight(mainFlight);
-                    
-                    for(int i = 0; i < mainFlight.getFlightSchedulePlans().size(); i++) {
-                        FlightSchedulePlan complementaryFlightSchedPlan = flightSchedulePlanSessionBeanRemote.retrieveFlightSchedulePlanByFlightSchedulePlanId(mainFlight.getFlightSchedulePlans().get(i).getFlightSchedulePlanId());
-                        complementaryFlightSchedulePlans.add(complementaryFlightSchedPlan);
-                    }
-                    complementaryFlight.setFlightSchedulePlans(complementaryFlightSchedulePlans);
 
                     Long complementaryFlightId = flightSessionBeanRemote.createNewFlight(complementaryFlight);
 
@@ -206,9 +189,6 @@ public class ScheduleManagerModule {
         }
         catch (FlightNotFoundException ex) {
             System.out.println("An error has occurred: The flight cannot be found!\n");
-        }
-        catch (FlightSchedulePlanNotFoundException ex) {
-            System.out.println("An error has occurred: The flight schedule plancannot be found!\n");
         }
         catch (GeneralException ex) {
             System.out.println("An unknown error has occurred while creating the flight!: " + ex.getMessage() + "\n");
@@ -286,12 +266,12 @@ public class ScheduleManagerModule {
                 flight.setAircraftConfiguration(newAircraftConfiguration);
             }
 
-            /*System.out.print("Enter Flight Schedule Plan ID (blank if no change)> ");
+            System.out.print("Enter Flight Schedule Plan ID (blank if no change)> ");
             input = scanner.nextLine().trim();
             if (input.length() > 0) {
                 //FlightSchedulePlan newFlightSchedulePlan = flightSchedulePlanSessionBeanRemote.retrieveFlightSchedulePlanByFlightSchedulePlanID(Long.valueOf(input));
                 //flight.setFlightSchedulePlan(newFlightSchedulePlan);
-            }*/
+            }
 
             flightSessionBeanRemote.updateFlight(flight);
             System.out.println("Flight updated successfully!\n");
