@@ -13,13 +13,9 @@ import entity.AircraftConfiguration;
 import entity.Flight;
 import entity.FlightRoute;
 import entity.FlightSchedulePlan;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.Set;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import util.exception.AircraftConfigurationNotFoundException;
 import util.exception.DeleteFlightException;
 import util.exception.FlightExistException;
@@ -27,7 +23,6 @@ import util.exception.FlightNotFoundException;
 import util.exception.FlightRouteNotFoundException;
 import util.exception.FlightSchedulePlanNotFoundException;
 import util.exception.GeneralException;
-import util.exception.InputDataValidationException;
 import util.exception.UpdateFlightException;
 
 /**
@@ -144,8 +139,18 @@ public class ScheduleManagerModule {
             newFlight.setFlightRoute(flightRoute);
             newFlight.setEnabled(Boolean.TRUE);
             newFlight.setIsMain(Boolean.TRUE);
-
-            //Add in schedule plan?
+            
+            System.out.print("How many flight schedule plans would you like to add? ");
+            response = scanner.nextInt();
+            List<FlightSchedulePlan> flightSchedulePlans = new ArrayList<>();
+            
+            for (int i = 0; i < response; i++) {
+                System.out.print("Enter Flight Schedule Plan Id> ");
+                FlightSchedulePlan flightSchedulePlan = flightSchedulePlanSessionBeanRemote.retrieveFlightSchedulePlanByFlightSchedulePlanId(Long.valueOf(scanner.nextLine().trim()));
+                flightSchedulePlans.add(flightSchedulePlan);
+            }
+            
+            newFlight.setFlightSchedulePlans(flightSchedulePlans);
             
             Long newFlightId = flightSessionBeanRemote.createNewFlight(newFlight);
             System.out.println("New flight created successfully!: " + newFlightId + "\n");
@@ -155,9 +160,11 @@ public class ScheduleManagerModule {
                 System.out.print("Would you like to create a complementary return flight? (Y for yes) > ");
                 input = scanner.nextLine().trim();
                 FlightRoute complementaryFlightRoute = flightRouteSessionBeanRemote.retrieveFlightRouteByFlightRouteId(mainFlight.getFlightRoute().getComplementaryFlightRoute().getFlightRouteId());
-
+                
+                
                 if (input.equals("Y")) {
                     Flight complementaryFlight = new Flight();
+                    List<FlightSchedulePlan> complementaryFlightSchedulePlans = new ArrayList<>();
 
                     System.out.print("Enter Flight Number> ");
                     flightNumber = scanner.nextLine().trim();
@@ -168,7 +175,11 @@ public class ScheduleManagerModule {
                     complementaryFlight.setIsMain(Boolean.FALSE);
                     complementaryFlight.setComplementaryFlight(mainFlight);
                     
-                    //TODO - Schedule Plan
+                    for(int i = 0; i < mainFlight.getFlightSchedulePlans().size(); i++) {
+                        FlightSchedulePlan complementaryFlightSchedPlan = flightSchedulePlanSessionBeanRemote.retrieveFlightSchedulePlanByFlightSchedulePlanId(mainFlight.getFlightSchedulePlans().get(i).getFlightSchedulePlanId());
+                        complementaryFlightSchedulePlans.add(complementaryFlightSchedPlan);
+                    }
+                    complementaryFlight.setFlightSchedulePlans(complementaryFlightSchedulePlans);
 
                     Long complementaryFlightId = flightSessionBeanRemote.createNewFlight(complementaryFlight);
 
@@ -195,6 +206,9 @@ public class ScheduleManagerModule {
         }
         catch (FlightNotFoundException ex) {
             System.out.println("An error has occurred: The flight cannot be found!\n");
+        }
+        catch (FlightSchedulePlanNotFoundException ex) {
+            System.out.println("An error has occurred: The flight schedule plancannot be found!\n");
         }
         catch (GeneralException ex) {
             System.out.println("An unknown error has occurred while creating the flight!: " + ex.getMessage() + "\n");
