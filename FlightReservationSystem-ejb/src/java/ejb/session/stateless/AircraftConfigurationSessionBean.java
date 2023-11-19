@@ -11,8 +11,6 @@ import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import util.exception.AircraftConfigurationNotFoundException;
@@ -113,21 +111,6 @@ public class AircraftConfigurationSessionBean implements AircraftConfigurationSe
         query.setParameter("inAircraftConfigurationId", aircraftConfigurationId);
         
         return query.getResultList();
-    }
-    
-    public AircraftConfiguration retrieveAircraftConfigurationByName(String name) throws AircraftConfigurationNotFoundException
-    {
-        Query query = em.createQuery("SELECT a FROM AircraftConfiguration a WHERE a.name = :inName");
-        query.setParameter("inName", name);
-        
-        try
-        {
-            return (AircraftConfiguration)query.getSingleResult();
-        }
-        catch(NoResultException | NonUniqueResultException ex)
-        {
-            throw new AircraftConfigurationNotFoundException("Aircraft Configuration name " + name + " does not exist!");
-        }
     }
     
 }

@@ -124,20 +124,6 @@ public class CustomerSessionBean implements CustomerSessionBeanRemote, CustomerS
         }
     }
     
-    @Override
-    public void updateCustomer(Customer customer) throws CustomerNotFoundException {
-        if(customer != null && customer.getCustomerId() != null)
-        {
-            Customer customerToUpdate = retrieveCustomerByCustomerId(customer.getCustomerId());
-            
-                customerToUpdate.setCreditCardRecord(customer.getCreditCardRecord());
-        }
-        else
-        {
-            throw new CustomerNotFoundException("Customer ID not provided for flight to be updated");
-        }
-    }
-    
     private String prepareInputDataValidationErrorsMessage(Set<ConstraintViolation<Customer>>constraintViolations)
     {
         String msg = "Input data validation error!:";

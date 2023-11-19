@@ -27,6 +27,4 @@ public interface AircraftConfigurationSessionBeanRemote {
     public AircraftConfiguration createNewAircraftConfiguration(AircraftConfiguration newAircraftConfiguration) throws AircraftTypeNotFoundException, AircraftTypeMaxSeatCapacityExceededException, CreateNewAircraftConfigurationException;
     
     public List<CabinClass> retrieveCabinClassesByAircraftConfigurationId(Long aircraftConfigurationId);
-
-    public AircraftConfiguration retrieveAircraftConfigurationByName(String name) throws AircraftConfigurationNotFoundException;
 }

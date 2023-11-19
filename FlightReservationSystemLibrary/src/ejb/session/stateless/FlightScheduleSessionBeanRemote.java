@@ -4,9 +4,7 @@
  */
 package ejb.session.stateless;
 
-import entity.FlightSchedule;
 import javax.ejb.Remote;
-import util.exception.FlightScheduleNotFoundException;
 
 /**
  *
@@ -14,7 +12,5 @@ import util.exception.FlightScheduleNotFoundException;
  */
 @Remote
 public interface FlightScheduleSessionBeanRemote {
-
-    public FlightSchedule retrieveFlightScheduleByFlightScheduleId(Long flightScheduleId) throws FlightScheduleNotFoundException;
     
 }

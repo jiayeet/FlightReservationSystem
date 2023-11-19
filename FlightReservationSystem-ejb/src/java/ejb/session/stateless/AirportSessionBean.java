@@ -57,22 +57,6 @@ public class AirportSessionBean implements AirportSessionBeanRemote, AirportSess
     }
     
     @Override
-    public Airport retrieveAirportByIATACode(String IATACode) throws AirportNotFoundException
-    {
-        Query query = em.createQuery("SELECT a FROM Airport a WHERE a.iataAirportCode = :inIataAirportCode");
-        query.setParameter("inIataAirportCode", IATACode);
-        
-        try
-        {
-            return (Airport)query.getSingleResult();
-        }
-        catch(NoResultException | NonUniqueResultException ex)
-        {
-            throw new AirportNotFoundException("Airport IATA Code " + IATACode + " does not exist!");
-        }
-    }
-    
-    @Override
     public Airport retrieveAirportByAirportId(Long airportId) throws AirportNotFoundException
     {
         Airport airport = em.find(Airport.class, airportId);

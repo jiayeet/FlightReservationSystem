@@ -31,11 +31,11 @@ public class FlightReservation implements Serializable {
     @OneToMany
     private List<FlightTicket> flightTickets;
     
-    @ManyToMany(mappedBy = "inBoundFlightReservations")
+    /*@ManyToMany(mappedBy = "inBoundFlightSchedules")
     private List<FlightSchedule> inBoundFlightSchedules;
     
-    @ManyToMany(mappedBy = "outBoundFlightReservations")
-    private List<FlightSchedule> outBoundFlightSchedules;
+    @ManyToMany(mappedBy = "outBoundFlightSchedules")
+    private List<FlightSchedule> outBoundFlightSchedules;*/
     
     @ManyToMany(mappedBy = "flightReservations")
     private List<CabinClass> cabinClasses;
@@ -43,8 +43,8 @@ public class FlightReservation implements Serializable {
 
     public FlightReservation() {
         flightTickets = new ArrayList<>();
-        inBoundFlightSchedules = new ArrayList<>();
-        outBoundFlightSchedules = new ArrayList<>();
+        //inBoundFlightSchedules = new ArrayList<>();
+        //outBoundFlightSchedules = new ArrayList<>();
         cabinClasses = new ArrayList();
     }
     

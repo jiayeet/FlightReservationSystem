@@ -103,10 +103,10 @@ public class RoutePlannerModule {
         
         try {
         System.out.print("Enter Origin Airport Name> ");
-        Airport originAirport = airportSessionBeanRemote.retrieveAirportByIATACode(scanner.nextLine().trim());
+        Airport originAirport = airportSessionBeanRemote.retrieveAirportByAirportName(scanner.nextLine().trim());
         newFlightRoute.setAirportOrigin(originAirport);
         System.out.print("Enter Destination Airport Name> ");
-        Airport destinationAirport = airportSessionBeanRemote.retrieveAirportByIATACode(scanner.nextLine().trim());
+        Airport destinationAirport = airportSessionBeanRemote.retrieveAirportByAirportName(scanner.nextLine().trim());
         newFlightRoute.setAirportDestination(destinationAirport);
         newFlightRoute.setEnabled(Boolean.TRUE);
         newFlightRoute.setIsMain(Boolean.TRUE);

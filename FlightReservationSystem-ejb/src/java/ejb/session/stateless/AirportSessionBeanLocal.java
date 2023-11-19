@@ -24,7 +24,4 @@ public interface AirportSessionBeanLocal {
 
     public Airport retrieveAirportByAirportName(String airportName) throws AirportNotFoundException;
     
-    public Airport retrieveAirportByIATACode(String IATACode) throws AirportNotFoundException;
-    
-    
 }

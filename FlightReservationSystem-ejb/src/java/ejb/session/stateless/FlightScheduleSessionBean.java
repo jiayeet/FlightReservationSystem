@@ -5,10 +5,18 @@
 package ejb.session.stateless;
 
 import entity.FlightSchedule;
+import entity.FlightSchedulePlan;
+import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import util.exception.FlightScheduleNotFoundException;
+import javax.persistence.PersistenceException;
+import javax.persistence.Query;
+import util.exception.DeleteFlightSchedulePlanException;
+import util.exception.FlightSchedulePlanExistException;
+import util.exception.FlightSchedulePlanNotFoundException;
+import util.exception.GeneralException;
+import util.exception.UpdateFlightSchedulePlanException;
 
 /**
  *
@@ -20,18 +28,5 @@ public class FlightScheduleSessionBean implements FlightScheduleSessionBeanRemot
     @PersistenceContext(unitName = "FlightReservationSystem-ejbPU")
     private EntityManager em;
 
-    @Override
-    public FlightSchedule retrieveFlightScheduleByFlightScheduleId(Long flightScheduleId) throws FlightScheduleNotFoundException
-    {
-        FlightSchedule flightSchedule = em.find(FlightSchedule.class, flightScheduleId);
-        
-        if(flightSchedule != null)
-        {
-            return flightSchedule;
-        }
-        else
-        {
-            throw new FlightScheduleNotFoundException("Flight Schedule ID " + flightScheduleId + " does not exist!");
-        }
-    }
+    
 }
