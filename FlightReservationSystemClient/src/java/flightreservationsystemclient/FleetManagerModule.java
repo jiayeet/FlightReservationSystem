@@ -47,7 +47,7 @@ public class FleetManagerModule {
             System.out.println("1: Create Aircraft Configurations");
             System.out.println("2: View All Aircraft Configurations");
             System.out.println("3: View Aircraft Configuration Details");
-            System.out.println("4: Back\n");
+            System.out.println("4: Logout\n");
             response = 0;
             
             while(response < 1 || response > 4)

@@ -10,7 +10,6 @@ import entity.FlightSchedule;
 import entity.FlightSchedulePlan;
 import java.util.List;
 import javax.ejb.Remote;
-import util.exception.CreateNewFlightSchedulePlanException;
 import util.exception.DeleteFlightSchedulePlanException;
 import util.exception.FlightNotFoundException;
 import util.exception.FlightSchedulePlanExistException;
@@ -25,7 +24,7 @@ import util.exception.UpdateFlightSchedulePlanException;
 @Remote
 public interface FlightSchedulePlanSessionBeanRemote {
     
-    public Long createNewFlightSchedulePlan(Long flightId, FlightSchedulePlan flightSchedulePlan) throws FlightSchedulePlanExistException, GeneralException, CreateNewFlightSchedulePlanException;
+    public Long createNewFlightSchedulePlan(FlightSchedulePlan flightSchedulePlan) throws FlightSchedulePlanExistException, GeneralException;
     
     public List<FlightSchedulePlan> retrieveAllFlightSchedulePlans();
     

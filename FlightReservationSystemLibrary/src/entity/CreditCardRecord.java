@@ -39,7 +39,7 @@ public class CreditCardRecord implements Serializable {
     private String cardHolderName;
     @Column(nullable = false)
     @NotNull
-    private Calendar expirationDate;
+    private String expirationDate;
     @Column(nullable = false, length = 3)
     @NotNull
     @Size(min = 3, max = 3)
@@ -106,14 +106,14 @@ public class CreditCardRecord implements Serializable {
     /**
      * @return the expirationDate
      */
-    public Calendar getExpirationDate() {
+    public String getExpirationDate() {
         return expirationDate;
     }
 
     /**
      * @param expirationDate the expirationDate to set
      */
-    public void setExpirationDate(Calendar expirationDate) {
+    public void setExpirationDate(String expirationDate) {
         this.expirationDate = expirationDate;
     }
     

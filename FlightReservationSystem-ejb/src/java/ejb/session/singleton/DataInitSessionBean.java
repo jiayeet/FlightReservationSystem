@@ -4,9 +4,12 @@
  */
 package ejb.session.singleton;
 
+import ejb.session.stateless.AircraftConfigurationSessionBeanLocal;
 import ejb.session.stateless.AircraftTypeSessionBeanLocal;
 import ejb.session.stateless.AirportSessionBeanLocal;
 import ejb.session.stateless.EmployeeSessionBeanLocal;
+import ejb.session.stateless.FlightRouteSessionBeanLocal;
+import ejb.session.stateless.FlightSessionBeanLocal;
 import ejb.session.stateless.PartnerSessionBeanLocal;
 import entity.AircraftType;
 import entity.Airport;
@@ -33,6 +36,12 @@ import util.exception.UnknownPersistenceException;
 @Startup
 public class DataInitSessionBean {
 
+    @EJB(name = "FlightSessionBeanLocal")
+    private FlightSessionBeanLocal flightSessionBeanLocal;
+    @EJB(name = "FlightRouteSessionBeanLocal")
+    private FlightRouteSessionBeanLocal flightRouteSessionBeanLocal;
+    @EJB(name = "AircraftConfigurationSessionBeanLocal")
+    private AircraftConfigurationSessionBeanLocal aircraftConfigurationSessionBeanLocal;
     @EJB(name = "AircraftTypeSessionBeanLocal")
     private AircraftTypeSessionBeanLocal aircraftTypeSessionBeanLocal;
     @EJB(name = "PartnerSessionBeanLocal")
@@ -52,13 +61,14 @@ public class DataInitSessionBean {
     @PostConstruct
     public void postConstruct() {
         try {
-            employeeSessionBeanLocal.retrieveEmployeeByUsername("systemAdministrator");
+            employeeSessionBeanLocal.retrieveEmployeeByUsername("fleetmanager");
         } catch (EmployeeNotFoundException ex) {
-            initialiseData();
+            //initialiseData();
+            initialiseData1();
         }
     }
     
-    private void initialiseData() {
+    /*private void initialiseData() {
         try 
         {
         airportSessionBeanLocal.createNewAirport(new Airport("SIN", "Changi", "Singapore", "Singapore", "Singapore"));
@@ -66,6 +76,27 @@ public class DataInitSessionBean {
         employeeSessionBeanLocal.createNewEmployee(new Employee("firstName", "lastName", "systemAdministrator", "password", EmployeeUserRoleEnum.SYSTEMADMINISTRATOR));
         partnerSessionBeanLocal.createNewPartner(new Partner("firstName", "lastName", "partner", "password"));
         aircraftTypeSessionBeanLocal.createNewAircraft(new AircraftType("Boeing 737", 200));
+        }
+        catch (EmployeeUsernameExistException | UnknownPersistenceException ex) {
+            ex.printStackTrace();
+        }
+    }*/
+    
+    private void initialiseData1() {
+        try
+        {
+            employeeSessionBeanLocal.createNewEmployee(new Employee("Fleet", "Manager", "fleetmanager", "password", EmployeeUserRoleEnum.FLEETMANAGER));
+            employeeSessionBeanLocal.createNewEmployee(new Employee("Route", "Planner", "routeplanner", "password", EmployeeUserRoleEnum.ROUTEPLANNER));
+            employeeSessionBeanLocal.createNewEmployee(new Employee("Schedule", "Manager", "schedulemanager", "password", EmployeeUserRoleEnum.SCHEDULEMANAGER));
+            employeeSessionBeanLocal.createNewEmployee(new Employee("Sales", "Manager", "salesmanager", "password", EmployeeUserRoleEnum.SALESMANAGER));
+            partnerSessionBeanLocal.createNewPartner(new Partner("Holiday", ".com", "holidaydotcom", "password"));
+            airportSessionBeanLocal.createNewAirport(new Airport("SIN", "Changi", "Singapore", "Singapore", "Singapore"));
+            airportSessionBeanLocal.createNewAirport(new Airport("HKG", "Hong Kong", "Chek Lap Kok", "Hong Kong", "China"));
+            airportSessionBeanLocal.createNewAirport(new Airport("TPE", "Taoyuan", "Taipei", "Taiwan", "R.O.C"));
+            airportSessionBeanLocal.createNewAirport(new Airport("NRT", "Narita", "Narita", "Chiba", "Japan"));
+            airportSessionBeanLocal.createNewAirport(new Airport("SYD", "Sydney", "Sydney", "New South Wales", "Australia"));
+            aircraftTypeSessionBeanLocal.createNewAircraft(new AircraftType("Boeing 737", 200));
+            aircraftTypeSessionBeanLocal.createNewAircraft(new AircraftType("Boeing 747", 400));
         }
         catch (EmployeeUsernameExistException | UnknownPersistenceException ex) {
             ex.printStackTrace();

@@ -4,7 +4,9 @@
  */
 package ejb.session.stateless;
 
+import entity.FlightSchedule;
 import javax.ejb.Local;
+import util.exception.FlightScheduleNotFoundException;
 
 /**
  *
@@ -12,5 +14,7 @@ import javax.ejb.Local;
  */
 @Local
 public interface FlightScheduleSessionBeanLocal {
+    
+    public FlightSchedule retrieveFlightScheduleByFlightScheduleId(Long flightScheduleId) throws FlightScheduleNotFoundException;
     
 }
