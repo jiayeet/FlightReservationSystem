@@ -4,8 +4,10 @@
  */
 package ejb.session.stateless;
 
+import entity.AircraftConfiguration;
 import entity.AircraftType;
 import javax.ejb.Local;
+import util.exception.AircraftConfigurationNotFoundException;
 import util.exception.AircraftTypeNotFoundException;
 
 /**

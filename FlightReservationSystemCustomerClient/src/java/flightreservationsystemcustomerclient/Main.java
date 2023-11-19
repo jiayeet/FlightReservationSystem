@@ -4,6 +4,7 @@
  */
 package flightreservationsystemcustomerclient;
 
+import ejb.session.stateless.CreditCardSessionBeanRemote;
 import ejb.session.stateless.CustomerSessionBeanRemote;
 import ejb.session.stateless.FlightReservationSessionBeanRemote;
 import ejb.session.stateless.FlightSchedulePlanSessionBeanRemote;
@@ -17,23 +18,30 @@ import javax.ejb.EJB;
  */
 public class Main {
 
-    @EJB(name = "FlightSchedulePlanSessionBeanRemote")
+    @EJB
+    private static CreditCardSessionBeanRemote creditCardSessionBeanRemote;  
+    @EJB
     private static FlightSchedulePlanSessionBeanRemote flightSchedulePlanSessionBeanRemote;
-    @EJB(name = "FlightTicketSessionBeanRemote")
+    @EJB
     private static FlightTicketSessionBeanRemote flightTicketSessionBeanRemote;
-    @EJB(name = "FlightReservationSessionBeanRemote")
+    @EJB
     private static FlightReservationSessionBeanRemote flightReservationSessionBeanRemote;
-    @EJB(name = "PassengerSessionBeanRemote")
+    @EJB
     private static PassengerSessionBeanRemote passengerSessionBeanRemote;
-    @EJB(name = "CustomerSessionBeanRemote")
+    @EJB
     private static CustomerSessionBeanRemote customerSessionBeanRemote;
+    
+    
     
     
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        MainApp mainApp = new MainApp(customerSessionBeanRemote, passengerSessionBeanRemote, flightReservationSessionBeanRemote, flightTicketSessionBeanRemote, flightSchedulePlanSessionBeanRemote);
+        if(passengerSessionBeanRemote == null){
+            System.out.println("test");
+        }
+        MainApp mainApp = new MainApp(customerSessionBeanRemote, passengerSessionBeanRemote, flightReservationSessionBeanRemote, flightTicketSessionBeanRemote, flightSchedulePlanSessionBeanRemote, creditCardSessionBeanRemote);
         mainApp.runApp();  
     }
     

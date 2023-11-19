@@ -12,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import util.enumeration.FlightScheduleType;
 
@@ -30,7 +31,7 @@ public class FlightSchedulePlan implements Serializable {
     private FlightScheduleType FlightScheduleType;
     private Boolean enabled;
     
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "flightId")
     private Flight flight;
     

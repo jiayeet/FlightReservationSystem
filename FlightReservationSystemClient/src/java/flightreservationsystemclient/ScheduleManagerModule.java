@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Scanner;
 import util.exception.AircraftConfigurationNotFoundException;
 import util.exception.DeleteFlightException;
+import util.exception.DeleteFlightRouteException;
 import util.exception.FlightExistException;
 import util.exception.FlightNotFoundException;
 import util.exception.FlightRouteNotFoundException;
@@ -123,74 +124,75 @@ public class ScheduleManagerModule {
             System.out.print("Enter Flight Number> ");
             flightNumber = scanner.nextLine().trim();
             newFlight.setFlightNumber(flightNumber);
-            System.out.print("Enter Aircraft Configuration Id> ");
-            AircraftConfiguration aircraftConfig = aircraftConfigurationSessionBeanRemote.retrieveAircraftConfigurationByAircraftConfigurationId(Long.valueOf(scanner.nextLine().trim()));
+            System.out.print("Enter Aircraft Configuration Name> ");
+            AircraftConfiguration aircraftConfig = aircraftConfigurationSessionBeanRemote.retrieveAircraftConfigurationByName(scanner.nextLine().trim());
             newFlight.setAircraftConfiguration(aircraftConfig);
 
-            System.out.print("Enter Flight Route Id> ");
-            FlightRoute flightRoute = flightRouteSessionBeanRemote.retrieveFlightRouteByFlightRouteId(Long.valueOf(scanner.nextLine().trim()));
-
-            while (flightRoute.getEnabled() == false) {
-                System.out.println("Flight route has been disabled, please input another flightRoute Id");
-                System.out.print("Enter Flight Route Id> ");
-                flightRoute = flightRouteSessionBeanRemote.retrieveFlightRouteByFlightRouteId(Long.valueOf(scanner.nextLine().trim()));
-            }
-
-            newFlight.setFlightRoute(flightRoute);
-            newFlight.setEnabled(Boolean.TRUE);
-            newFlight.setIsMain(Boolean.TRUE);
-
+            System.out.print("Enter Flight Route Origin (IATA Code)> ");
+            String originAirport = scanner.nextLine().trim();
+            System.out.print("Enter Flight Route Destination (IATA Code)> ");
+            String destinationAirport = scanner.nextLine().trim();
             
-            Long newFlightId = flightSessionBeanRemote.createNewFlight(newFlight);
-            System.out.println("New flight created successfully!: " + newFlightId + "\n");
-            Flight mainFlight = flightSessionBeanRemote.retrieveFlightByFlightId(newFlightId);
+            FlightRoute flightRoute = flightRouteSessionBeanRemote.retrieveFlightRouteByDestinations(originAirport, destinationAirport);
+            
+            if (flightRoute.getEnabled() == false) {
+                System.out.println("Flight route has been disabled, it cannot be used to create new flights!");
+            } else {
 
-            if (mainFlight.getFlightRoute().getComplementaryFlightRoute() != null) {
-                System.out.print("Would you like to create a complementary return flight? (Y for yes) > ");
-                input = scanner.nextLine().trim();
-                FlightRoute complementaryFlightRoute = flightRouteSessionBeanRemote.retrieveFlightRouteByFlightRouteId(mainFlight.getFlightRoute().getComplementaryFlightRoute().getFlightRouteId());
-                
-                
-                if (input.equals("Y")) {
-                    Flight complementaryFlight = new Flight();
-                    List<FlightSchedulePlan> complementaryFlightSchedulePlans = new ArrayList<>();
+                newFlight.setFlightRoute(flightRoute);
+                newFlight.setEnabled(Boolean.TRUE);
+                newFlight.setIsMain(Boolean.TRUE);
 
-                    System.out.print("Enter Flight Number> ");
-                    flightNumber = scanner.nextLine().trim();
-                    complementaryFlight.setFlightNumber(flightNumber);
-                    complementaryFlight.setAircraftConfiguration(aircraftConfig);
-                    complementaryFlight.setFlightRoute(complementaryFlightRoute);
-                    complementaryFlight.setEnabled(Boolean.TRUE);
-                    complementaryFlight.setIsMain(Boolean.FALSE);
-                    complementaryFlight.setComplementaryFlight(mainFlight);
+                Long newFlightId = flightSessionBeanRemote.createNewFlight(newFlight);
+                System.out.println("New flight created successfully!: " + newFlightId + "\n");
+                Flight mainFlight = flightSessionBeanRemote.retrieveFlightByFlightId(newFlightId);
 
-                    Long complementaryFlightId = flightSessionBeanRemote.createNewFlight(complementaryFlight);
+                if (mainFlight.getFlightRoute().getComplementaryFlightRoute() != null) {
+                    System.out.print("Would you like to create a complementary return flight? (Y for yes) > ");
+                    input = scanner.nextLine().trim();
+                    FlightRoute complementaryFlightRoute = flightRouteSessionBeanRemote.retrieveFlightRouteByFlightRouteId(mainFlight.getFlightRoute().getComplementaryFlightRoute().getFlightRouteId());
 
-                    System.out.println("Complementary flight created successfully!: " + complementaryFlightId + "\n");
-                    
-                    Flight createdComplementaryFlight = flightSessionBeanRemote.retrieveFlightByFlightId(complementaryFlightId);
-                    
-                    mainFlight.setComplementaryFlight(createdComplementaryFlight);
-                    flightSessionBeanRemote.updateFlight(mainFlight);
+                    if (input.equals("Y")) {
+                        Flight complementaryFlight = new Flight();
+                        List<FlightSchedulePlan> complementaryFlightSchedulePlans = new ArrayList<>();
+
+                        System.out.print("Enter Flight Number> ");
+                        flightNumber = scanner.nextLine().trim();
+                        complementaryFlight.setFlightNumber(flightNumber);
+                        complementaryFlight.setAircraftConfiguration(aircraftConfig);
+                        complementaryFlight.setFlightRoute(complementaryFlightRoute);
+                        complementaryFlight.setEnabled(Boolean.TRUE);
+                        complementaryFlight.setIsMain(Boolean.FALSE);
+                        complementaryFlight.setComplementaryFlight(mainFlight);
+
+                        Long complementaryFlightId = flightSessionBeanRemote.createNewFlight(complementaryFlight);
+
+                        System.out.println("Complementary flight created successfully!: " + complementaryFlightId + "\n");
+
+                        Flight createdComplementaryFlight = flightSessionBeanRemote.retrieveFlightByFlightId(complementaryFlightId);
+
+                        mainFlight.setComplementaryFlight(createdComplementaryFlight);
+                        flightSessionBeanRemote.updateFlight(mainFlight);
+                    }
                 }
             }
-        }
-        catch (FlightRouteNotFoundException ex) {
+            }
+            catch (FlightRouteNotFoundException ex) {
             System.out.println("An error has occurred: The flight route is not found!\n");
         }
-        catch (AircraftConfigurationNotFoundException ex) {
+            catch (AircraftConfigurationNotFoundException ex) {
             System.out.println("An error has occurred: The aircraft configuration does not exist!\n");
         }
-        catch (UpdateFlightException ex) {
+            catch (UpdateFlightException ex) {
             System.out.println("An error has occurred: The main flight cannot be updated!\n");
         }
-        catch (FlightExistException ex) {
+            catch (FlightExistException ex) {
             System.out.println("An error has occurred: The flight already exists!\n");
         }
-        catch (FlightNotFoundException ex) {
+            catch (FlightNotFoundException ex) {
             System.out.println("An error has occurred: The flight cannot be found!\n");
         }
-        catch (GeneralException ex) {
+            catch (GeneralException ex) {
             System.out.println("An unknown error has occurred while creating the flight!: " + ex.getMessage() + "\n");
         }
     }

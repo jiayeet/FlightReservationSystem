@@ -53,11 +53,11 @@ public class Flight implements Serializable {
     @JoinColumn(name = "complementaryFlight")
     private Flight complementaryFlight;
     
-    @OneToOne
-    @JoinColumn(name = "flightSchedulePlanId")
-    private FlightSchedulePlan flightSchedulePlan;
+    @OneToMany
+    private List<FlightSchedulePlan> flightSchedulePlans;
     
     public Flight() {
+        flightSchedulePlans = new ArrayList<>();
     }
     
     /**
@@ -80,15 +80,15 @@ public class Flight implements Serializable {
     /**
      * @return the flightSchedulePlans
      */
-    public FlightSchedulePlan getFlightSchedulePlan() {
-        return flightSchedulePlan;
+    public List<FlightSchedulePlan> getFlightSchedulePlans() {
+        return flightSchedulePlans;
     }
 
     /**
      * @param flightSchedulePlans the flightSchedulePlans to set
      */
-    public void setFlightSchedulePlan(FlightSchedulePlan flightSchedulePlan) {
-        this.flightSchedulePlan = flightSchedulePlan;
+    public void setFlightSchedulePlan(List<FlightSchedulePlan> flightSchedulePlans) {
+        this.flightSchedulePlans = flightSchedulePlans;
     }
     
     
