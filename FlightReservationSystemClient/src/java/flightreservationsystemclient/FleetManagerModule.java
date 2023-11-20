@@ -13,6 +13,7 @@ import util.enumeration.CabinClassType;
 import util.exception.AircraftConfigurationNotFoundException;
 import util.exception.AircraftTypeMaxSeatCapacityExceededException;
 import util.exception.AircraftTypeNotFoundException;
+import util.exception.CabinClassMaxSeatCapacityExceededException;
 import util.exception.CreateNewAircraftConfigurationException;
 
 /**
@@ -126,7 +127,7 @@ public class FleetManagerModule {
             
             while(true)
             {
-                System.out.print("Select Cabin Class Type (1: First Class, 2: Business Class, 3: Premium Economy Class, 4: Economy Class)> ");
+                System.out.print("Select Cabin Class Type (1: First Class (F), 2: Business Class (J), 3: Premium Economy Class (W), 4: Economy Class (Y))> ");
                 Integer cabinClassTypeInt = scanner.nextInt();
                 
                 if (cabinClassTypeInt >= 1 && cabinClassTypeInt <= 4) 
@@ -152,39 +153,42 @@ public class FleetManagerModule {
             newCabinClass.setSeatConfiguration(scanner.nextLine().trim());
             System.out.print("Enter Maximum Seating Capacity> ");
             newCabinClass.setMaxCapacity(scanner.nextInt()); 
-            cabinsCapacity += newCabinClass.getMaxCapacity();
+            cabinsCapacity = newCabinClass.getMaxCapacity();
             
             // TODO - Insert Bean Validation try-catch block here
             
             if (cabinsCapacity <= maximumCapacity) {
                 newAircraftConfiguration.getCabinClasses().add(newCabinClass);
-            } else {
-                System.out.println("Invalid option, please try again! The new cabin class seat capacity exceeds the capacity of the aircraft configuration\n");
+            }
+            else
+            {
+                System.out.println("Invalid option, please try again! The new cabin class seat capacity exceeds the capacity of the aircraft configuration!\n");
+                i--;
             }
         }
         
         try
         {
             newAircraftConfiguration = aircraftConfigurationSessionBeanRemote.createNewAircraftConfiguration(newAircraftConfiguration);
-            
+
             System.out.println("New Aircraft Configuration created successfully!: " + newAircraftConfiguration.getAircraftConfigurationId() + "\n");
         }
-        catch(AircraftTypeNotFoundException ex) 
+        catch (AircraftTypeNotFoundException ex)
         {
             System.out.println("An error has occurred while creating the new aircraft configuration!: Invalid Aircraft Configuration Name\n");
         }
-        catch(AircraftTypeMaxSeatCapacityExceededException ex)
+        catch (AircraftTypeMaxSeatCapacityExceededException | CabinClassMaxSeatCapacityExceededException ex)
         {
             System.out.println("An error has occurred while creating the new aircraft configuration!: " + ex.getMessage() + "\n");
         }
-        catch(CreateNewAircraftConfigurationException ex)
+        catch (CreateNewAircraftConfigurationException ex)
         {
             System.out.println(ex.getMessage() + "\n");
         }
-        
     }
     
-    public void doViewAllAircraftConfigurations() {
+    public void doViewAllAircraftConfigurations()
+    {
         Scanner scanner = new Scanner(System.in);
         
         System.out.println("*** Flight Reservation System :: Fleet Manager :: View All Aircraft Configurations ***\n");
@@ -202,7 +206,8 @@ public class FleetManagerModule {
         scanner.nextLine();
     }
     
-    public void doViewAircraftConfigurationDetails() {
+    public void doViewAircraftConfigurationDetails()
+    {
         Scanner scanner = new Scanner(System.in);
         Integer response = 0;
         

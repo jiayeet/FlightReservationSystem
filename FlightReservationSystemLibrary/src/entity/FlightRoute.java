@@ -125,7 +125,7 @@ public class FlightRoute implements Serializable {
     }
     
     public String destinationIATA() {
-        return airportOrigin.getIataAirportCode();
+        return airportDestination.getIataAirportCode();
     }
 
     /**

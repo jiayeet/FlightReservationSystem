@@ -18,6 +18,7 @@ import javax.persistence.Query;
 import util.exception.AircraftConfigurationNotFoundException;
 import util.exception.AircraftTypeMaxSeatCapacityExceededException;
 import util.exception.AircraftTypeNotFoundException;
+import util.exception.CabinClassMaxSeatCapacityExceededException;
 import util.exception.CreateNewAircraftConfigurationException;
 
 /**
@@ -40,21 +41,34 @@ public class AircraftConfigurationSessionBean implements AircraftConfigurationSe
 
     
     @Override
-    public AircraftConfiguration createNewAircraftConfiguration(AircraftConfiguration newAircraftConfiguration) throws AircraftTypeNotFoundException, AircraftTypeMaxSeatCapacityExceededException, CreateNewAircraftConfigurationException
+    public AircraftConfiguration createNewAircraftConfiguration(AircraftConfiguration newAircraftConfiguration) throws AircraftTypeNotFoundException, AircraftTypeMaxSeatCapacityExceededException, CreateNewAircraftConfigurationException, CabinClassMaxSeatCapacityExceededException
     {
         if (newAircraftConfiguration != null)
         {
             // Retrieving Aircraft Type name from AircraftConfiguration name (Boeing ***)
             AircraftType aircraftType = aircraftTypeSessionBeanLocal.retrieveAircraftTypeByAircraftTypeName(newAircraftConfiguration.getName().substring(0, 10));
 
-            Integer totalMaximumSeatCapacity = 0;
+            int totalMaximumSeatCapacity = 0;
 
             for (CabinClass cabinClass : newAircraftConfiguration.getCabinClasses()) {
-                totalMaximumSeatCapacity += cabinClass.getNumOfRows() * cabinClass.getNumOfSeatsAbreast();
+                int totalCabinClassSeatCapacity = cabinClass.getNumOfRows() * cabinClass.getNumOfSeatsAbreast();
+                
+                if (totalCabinClassSeatCapacity > cabinClass.getMaxCapacity())
+                {
+                    throw new CabinClassMaxSeatCapacityExceededException("Total seats exceed maximum seat capacity of a cabin class!");
+                }
+                
+                totalMaximumSeatCapacity += totalCabinClassSeatCapacity;
             }
 
+            System.out.println("Aircraft Type Max Seat Capacity: " + aircraftType.getMaxSeatCapacity());
+            
             if (totalMaximumSeatCapacity > aircraftType.getMaxSeatCapacity()) {
-                throw new AircraftTypeMaxSeatCapacityExceededException("Total maximum seat capacity of Aircraft Configuration exceeds maximum seat capacity of Aircraft Type!");
+                throw new AircraftTypeMaxSeatCapacityExceededException("Total seat capacity of all cabin classes exceeds maximum seat capacity of Aircraft Type!");
+            }
+            else if (totalMaximumSeatCapacity > newAircraftConfiguration.getMaximumCapacity())
+            {
+                throw new AircraftTypeMaxSeatCapacityExceededException("Total seat capacity of all cabin classes exceeds maximum seat capacity of Aircraft Configuration!");
             }
 
             // Associating entities and persisting new entity instances where necessary
