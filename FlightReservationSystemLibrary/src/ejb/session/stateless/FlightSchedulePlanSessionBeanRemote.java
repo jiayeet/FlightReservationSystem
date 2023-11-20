@@ -8,6 +8,7 @@ import util.exception.DuplicateFareBasisCodeException;
 import entity.Fare;
 import entity.FlightSchedule;
 import entity.FlightSchedulePlan;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.Remote;
 import util.exception.CreateNewFlightSchedulePlanException;
@@ -43,5 +44,11 @@ public interface FlightSchedulePlanSessionBeanRemote {
     public List<FlightSchedule> retrieveFlightSchedulesByFlightSchedulePlanId(Long flightSchedulePlanId) throws FlightSchedulePlanNotFoundException;
     
     public List<Fare> retrieveFaresByFlightSchedulePlanId(Long flightSchedulePlanId) throws FlightSchedulePlanNotFoundException;
+
+    public List<FlightSchedule> retrieveFlightSchedulesOnInputDate(Long flightSchedulePlanId, Date inputDate) throws FlightSchedulePlanNotFoundException;
+
+    public List<FlightSchedule> retrieveFlightSchedulesInRangeAfter(Long flightSchedulePlanId, Date inputDate) throws FlightSchedulePlanNotFoundException;
+
+    public List<FlightSchedule> retrieveFlightSchedulesInRangeBefore(Long flightSchedulePlanId, Date inputDate) throws FlightSchedulePlanNotFoundException;
 
 }

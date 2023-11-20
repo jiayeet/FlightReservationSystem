@@ -7,14 +7,17 @@ package entity;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import util.enumeration.FlightType;
+import util.enumeration.TripType;
 
 /**
  *
@@ -27,6 +30,12 @@ public class FlightReservation implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long flightReservationId;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TripType tripType;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private FlightType flightType;
     
     @OneToMany
     private List<FlightTicket> flightTickets;
@@ -46,6 +55,34 @@ public class FlightReservation implements Serializable {
         inBoundFlightSchedules = new ArrayList<>();
         outBoundFlightSchedules = new ArrayList<>();
         cabinClasses = new ArrayList();
+    }
+    
+    /**
+     * @return the tripType
+     */
+    public TripType getTripType() {
+        return tripType;
+    }
+
+    /**
+     * @param tripType the tripType to set
+     */
+    public void setTripType(TripType tripType) {
+        this.tripType = tripType;
+    }
+
+    /**
+     * @return the flightType
+     */
+    public FlightType getFlightType() {
+        return flightType;
+    }
+
+    /**
+     * @param flightType the flightType to set
+     */
+    public void setFlightType(FlightType flightType) {
+        this.flightType = flightType;
     }
     
     /**

@@ -299,12 +299,12 @@ public class ScheduleManagerModule {
                 flight.setAircraftConfiguration(newAircraftConfiguration);
             }
 
-            System.out.print("Enter Flight Schedule Plan ID (blank if no change)> ");
+            /*System.out.print("Enter Flight Schedule Plan ID (blank if no change)> ");
             input = scanner.nextLine().trim();
             if (input.length() > 0) {
                 //FlightSchedulePlan newFlightSchedulePlan = flightSchedulePlanSessionBeanRemote.retrieveFlightSchedulePlanByFlightSchedulePlanID(Long.valueOf(input));
                 //flight.setFlightSchedulePlan(newFlightSchedulePlan);
-            }
+            }*/
 
             flightSessionBeanRemote.updateFlight(flight);
             System.out.println("Flight updated successfully!\n");

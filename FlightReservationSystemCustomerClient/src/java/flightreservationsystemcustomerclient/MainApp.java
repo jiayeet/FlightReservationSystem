@@ -8,14 +8,19 @@ import ejb.session.stateless.CreditCardSessionBeanRemote;
 import ejb.session.stateless.CustomerSessionBeanRemote;
 import ejb.session.stateless.FlightReservationSessionBeanRemote;
 import ejb.session.stateless.FlightSchedulePlanSessionBeanRemote;
+import ejb.session.stateless.FlightSessionBeanRemote;
 import ejb.session.stateless.FlightTicketSessionBeanRemote;
 import ejb.session.stateless.PassengerSessionBeanRemote;
 import entity.CabinClass;
 import entity.CreditCardRecord;
 import entity.Customer;
+import entity.Flight;
 import entity.FlightReservation;
+import entity.FlightSchedule;
+import entity.FlightSchedulePlan;
 import entity.FlightTicket;
 import entity.Passenger;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -27,7 +32,9 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import util.exception.CustomerUsernameExistException;
+import util.exception.FlightNotFoundException;
 import util.exception.FlightReservationNotFoundException;
+import util.exception.FlightSchedulePlanNotFoundException;
 import util.exception.FlightTicketIdExistenceException;
 import util.exception.InputDataValidationException;
 import util.exception.InvalidLoginCredentials;
@@ -48,6 +55,7 @@ public class MainApp {
     //private FlightScheduleSessionBean flightScheduleSessionBean;
     private FlightReservationSessionBeanRemote flightReservationSessionBean;
     private CreditCardSessionBeanRemote creditCardSessionBeanRemote;
+    private FlightSessionBeanRemote flightSessionBeanRemote;
     
     private final ValidatorFactory validatorFactory;
     private final Validator validator;
@@ -60,7 +68,7 @@ public class MainApp {
     
     MainApp(CustomerSessionBeanRemote customerSessionBeanRemote, PassengerSessionBeanRemote passengerSessionBeanRemote, FlightReservationSessionBeanRemote flightReservationSessionBeanRemote,
             FlightTicketSessionBeanRemote flightTicketSessionBeanRemote, FlightSchedulePlanSessionBeanRemote flightSchedulePlanSessionBeanRemote, 
-            CreditCardSessionBeanRemote creditCardRecordSessionBeanRemote/*, FlightScheduleSessionBean flightScheduleSessionBean*/)
+            CreditCardSessionBeanRemote creditCardRecordSessionBeanRemote, FlightSessionBeanRemote flightSessionBeanRemote /*, FlightScheduleSessionBean flightScheduleSessionBean*/)
     {
         this();
         if (customerSessionBeanRemote == null) {
@@ -76,7 +84,8 @@ public class MainApp {
         this.flightTicketSessionBeanRemote = flightTicketSessionBeanRemote;
         this.flightSchedulePlanSessionBeanRemote = flightSchedulePlanSessionBeanRemote;
         //this.flightScheduleSessionBean = flightScheduleSessionBean;
-        this.creditCardSessionBeanRemote = creditCardSessionBeanRemote;
+        this.creditCardSessionBeanRemote = creditCardRecordSessionBeanRemote;
+        this.flightSessionBeanRemote = flightSessionBeanRemote;
         
     }
     
@@ -147,7 +156,7 @@ public class MainApp {
         
         Set<ConstraintViolation<Customer>>constraintViolations = validator.validate(newCustomer);
         
-        System.out.println(newCustomer.getAddress() + newCustomer.getEmail() + newCustomer.getFirstName() + newCustomer.getLastName() + newCustomer.getUsername() + newCustomer.getPassword() + newCustomer.getMobileNumber());
+        //System.out.println(newCustomer.getAddress() + newCustomer.getEmail() + newCustomer.getFirstName() + newCustomer.getLastName() + newCustomer.getUsername() + newCustomer.getPassword() + newCustomer.getMobileNumber());
 
         if (constraintViolations.isEmpty()) {
             try {
@@ -235,19 +244,21 @@ public class MainApp {
         Integer tripType;
         String departureAirport = "";
         String destinationAirport = "";
-        Date departureDate;
-        Date returnDate;
+        Date departureDate = new Date();
+        Date returnDate = new Date();
         int noOfPassengers = 0;
         Boolean directFlight;
         Integer flightPreferenceType;
         Integer cabinPreferenceType;
+        SimpleDateFormat outputDateFormat = new SimpleDateFormat("dd MMM yy hh:mm a");
+        FlightReservation flightReservation = new FlightReservation();
 
         System.out.println("*** Flight Reservation System :: Customer :: Search Flight ***\n");
         while (true) {
-            System.out.print("Select Trip Type (1: Regular Trip, 2: Round-Trip, 3: Return Trip>");
+            System.out.print("Select Trip Type (1: One-way Trip, 2: Round-Trip, 3: Return Trip, 4: No Preference>");
             tripType = scanner.nextInt();
-            if (tripType >= 1 && tripType <= 3) {
-                    break;
+            if (tripType >= 1 && tripType <= 4) {
+                break;
             } 
             else {
                 System.out.println("Invalid option, please try again!\n");
@@ -261,13 +272,11 @@ public class MainApp {
         System.out.print("Enter Departure Date (dd mm yy)> ");
         departureDate = inputDateFormat.parse(scanner.nextLine().trim());
         
-        if (tripType == 2 && tripType == 3) {
-            System.out.print("Enter return date> ");
+        //If customer indicated a preference of round-trip/return only, take in the return date
+        if (tripType == 2 || tripType == 3) {
+            System.out.print("Enter return date (dd mm yy)> ");
             returnDate = inputDateFormat.parse(scanner.nextLine().trim());
         }
-        
-        System.out.print("Enter number of passengers> ");
-        noOfPassengers = scanner.nextInt();
                 
         while (true) {
             System.out.print("Select preference for flight (1: Direct, 2: Connecting, 3: No Preference> ");
@@ -297,12 +306,92 @@ public class MainApp {
             System.out.println("Invalid date/time input!\n");
         }
         
-        //Get all flight schedules
-        //Iterate through the flight schedules and find dates that are on the day itself and print
-        //Iterate and find dates that depart 1/2/3 days before the required date
-        //Iterate and find dates that depart 1/2/3 after the required date
-        //print flightscheduleId, departuredatetime, arrivaldatetime, cabin classes available, seats available, price per passenger (lowest fare), price for all passengers 
+        System.out.print("Enter number of passengers> ");
+        noOfPassengers = scanner.nextInt();
         
+        List<FlightSchedulePlan> allFlightSchedulePlans = flightSchedulePlanSessionBeanRemote.retrieveAllFlightSchedulePlans();
+       
+        
+        try {
+            System.out.println("Flight Schedules for flights that will depart on the day of.");
+            System.out.printf("%23s%11s%19s\n", "Flight Schedule ID", "Flight Number", "Departure Date/Time");
+            for (FlightSchedulePlan flightSchedulePlan : allFlightSchedulePlans) {
+                List<FlightSchedule> flightSchedules = flightSchedulePlanSessionBeanRemote.retrieveFlightSchedulesOnInputDate(flightSchedulePlan.getFlightSchedulePlanId(), departureDate);
+                    for (FlightSchedule flightSchedule : flightSchedules) {
+                        System.out.printf("%23s%11s%19s\n", flightSchedule.getFlightScheduleId(), flightSchedulePlan.getFlightNumber(), outputDateFormat.format(flightSchedule.getDepartureDateTime()));
+                    }
+            
+                    System.out.printf("%16s%4s%10s%25s\n", "Cabin Class Type", "Fare", "Total Fare", "Number of Seats Available");
+                    Flight flight = flightSessionBeanRemote.retrieveFlightByFlightNumber(flightSchedulePlan.getFlightNumber());
+                    for (CabinClass cabinClass : flight.getAircraftConfiguration().getCabinClasses()) 
+                    {
+                        //Get lowest fares
+                        Integer lowestFare = flightSchedulePlan.getFares().get(0).getFareAmount();
+                        for(int i = 1; i < flightSchedulePlan.getFares().size(); i++) {
+                            if (lowestFare > flightSchedulePlan.getFares().get(i).getFareAmount()) {
+                                lowestFare = flightSchedulePlan.getFares().get(i).getFareAmount();
+                            }
+                        }
+                        //TODO - Add seats availability for each cabin class type, double check fares and cabin classes
+                        System.out.printf("%16s%4s%10s%25s\n", cabinClass.getCabinClassType().toString(), lowestFare, lowestFare * noOfPassengers);
+                    }
+            }
+            
+            System.out.println("Flight Schedules for flights that will depart 1/2/3 days before departure date.");
+            System.out.printf("%23s%11s%19s\n", "Flight Schedule ID", "Flight Number", "Departure Date/Time");
+            for (FlightSchedulePlan flightSchedulePlan : allFlightSchedulePlans) {
+                List<FlightSchedule> flightSchedules = flightSchedulePlanSessionBeanRemote.retrieveFlightSchedulesInRangeBefore(flightSchedulePlan.getFlightSchedulePlanId(), departureDate);
+                    for (FlightSchedule flightSchedule : flightSchedules) {
+                        System.out.printf("%23s%11s%19s\n", flightSchedule.getFlightScheduleId(), flightSchedulePlan.getFlightNumber(), outputDateFormat.format(flightSchedule.getDepartureDateTime()));
+                    }
+            
+                    System.out.printf("%16s%4s%10s%25s\n", "Cabin Class Type", "Fare", "Tot al Fare", "Number of Seats Available");
+                    Flight flight = flightSessionBeanRemote.retrieveFlightByFlightNumber(flightSchedulePlan.getFlightNumber());
+                    for (CabinClass cabinClass : flight.getAircraftConfiguration().getCabinClasses()) 
+                    {
+                        //Get lowest fares
+                        Integer lowestFare = flightSchedulePlan.getFares().get(0).getFareAmount();
+                        for(int i = 1; i < flightSchedulePlan.getFares().size(); i++) {
+                            if (lowestFare > flightSchedulePlan.getFares().get(i).getFareAmount()) {
+                                lowestFare = flightSchedulePlan.getFares().get(i).getFareAmount();
+                            }
+                        }
+                        //TODO - Add seats availability for each cabin class type, double check fares and cabin classes
+                        System.out.printf("%16s%4s%10s%25s\n", cabinClass.getCabinClassType().toString(), lowestFare, lowestFare * noOfPassengers);
+                    }
+            }
+            
+            System.out.println("Flight Schedules for flights that will depart 1/2/3 days after departure date.");
+            System.out.printf("%23s%11s%19s\n", "Flight Schedule ID", "Flight Number", "Departure Date/Time");
+            for (FlightSchedulePlan flightSchedulePlan : allFlightSchedulePlans) {
+                List<FlightSchedule> flightSchedules = flightSchedulePlanSessionBeanRemote.retrieveFlightSchedulesInRangeAfter(flightSchedulePlan.getFlightSchedulePlanId(), departureDate);
+                    for (FlightSchedule flightSchedule : flightSchedules) {
+                        System.out.printf("%23s%11s%19s\n", flightSchedule.getFlightScheduleId(), flightSchedulePlan.getFlightNumber(), outputDateFormat.format(flightSchedule.getDepartureDateTime()));
+                    }
+            
+                    System.out.printf("%16s%4s%10s%25s\n", "Cabin Class Type", "Fare", "Tot al Fare", "Number of Seats Available");
+                    Flight flight = flightSessionBeanRemote.retrieveFlightByFlightNumber(flightSchedulePlan.getFlightNumber());
+                    for (CabinClass cabinClass : flight.getAircraftConfiguration().getCabinClasses()) 
+                    {
+                        //Get lowest fares
+                        Integer lowestFare = flightSchedulePlan.getFares().get(0).getFareAmount();
+                        for(int i = 1; i < flightSchedulePlan.getFares().size(); i++) {
+                            if (lowestFare > flightSchedulePlan.getFares().get(i).getFareAmount()) {
+                                lowestFare = flightSchedulePlan.getFares().get(i).getFareAmount();
+                            }
+                        }
+                        //TODO - Add seats availability for each cabin class type, double check fares and cabin classes
+                        System.out.printf("%16s%4s%10s%25s\n", cabinClass.getCabinClassType().toString(), lowestFare, lowestFare * noOfPassengers);
+                    }
+            }
+            
+            
+        }
+        catch(FlightSchedulePlanNotFoundException ex) {
+            System.out.println("An error has occurred when creating Flight Schedule Plan: Flight Schedule Plan not found!");
+        } catch(FlightNotFoundException ex) {
+            System.out.println("An error has occurred when looking for flight: Flight Schedule Plan not found!");
+        }
         
         System.out.println("Would you like to reserve a flight? (Enter 'Y' for yes)> ");
         input = scanner.nextLine().trim();

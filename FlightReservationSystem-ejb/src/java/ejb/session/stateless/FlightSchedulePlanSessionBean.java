@@ -10,6 +10,8 @@ import entity.Flight;
 import entity.FlightSchedule;
 import entity.FlightSchedulePlan;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Set;
@@ -324,7 +326,70 @@ public class FlightSchedulePlanSessionBean implements FlightSchedulePlanSessionB
     }
     
     @Override
-    public void updateFlightSchedulePlan(FlightSchedulePlan flightSchedulePlan) throws FlightSchedulePlanNotFoundException, UpdateFlightSchedulePlanException, InputDataValidationException
+    public List<FlightSchedule> retrieveFlightSchedulesOnInputDate(Long flightSchedulePlanId, Date inputDate) throws FlightSchedulePlanNotFoundException {
+        
+        FlightSchedulePlan flightSchedulePlan = em.find(FlightSchedulePlan.class, flightSchedulePlanId);
+        
+        if (flightSchedulePlan != null) {
+            Query query = em.createQuery("SELECT fs FROM FlightSchedulePlan fsp JOIN fsp.flightSchedules fs WHERE YEAR(fs.departureDate) = YEAR(:inputDate) AND MONTH(fs.departureDate) = MONTH(:inputDate) AND DAY(fs.departureDate) = DAY(:inputDate)");
+            //Query query = em.createQuery("SELECT fs FROM FlightSchedulePlan fsp JOIN fsp.flightSchedules fs WHERE fs.departureDate = :inputDate");
+            query.setParameter("inputDate", inputDate);
+
+            return query.getResultList();
+        }
+        else
+        {
+            throw new FlightSchedulePlanNotFoundException("Flight Schedule Plan Id " + flightSchedulePlanId + " does not exist!");
+        }
+    }
+    
+    @Override
+    public List<FlightSchedule> retrieveFlightSchedulesInRangeBefore(Long flightSchedulePlanId, Date inputDate) throws FlightSchedulePlanNotFoundException {
+        FlightSchedulePlan flightSchedulePlan = em.find(FlightSchedulePlan.class, flightSchedulePlanId);
+
+        if (flightSchedulePlan != null) {
+            Query query = em.createQuery("SELECT fs FROM FlightSchedulePlan fsp JOIN fsp.flightSchedules fs WHERE fs.departureDate BETWEEN :startDate AND :endDate");
+
+            // Calculate the start and end dates for the range
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(inputDate);
+            calendar.add(Calendar.DAY_OF_MONTH, -3);
+            Date startDate = calendar.getTime();
+
+            query.setParameter("startDate", startDate);
+            query.setParameter("endDate", inputDate);
+
+            return query.getResultList();
+        } else {
+            throw new FlightSchedulePlanNotFoundException("Flight Schedule Plan Id " + flightSchedulePlanId + " does not exist!");
+        }
+    }
+    
+    @Override
+    public List<FlightSchedule> retrieveFlightSchedulesInRangeAfter(Long flightSchedulePlanId, Date inputDate) throws FlightSchedulePlanNotFoundException {
+        FlightSchedulePlan flightSchedulePlan = em.find(FlightSchedulePlan.class, flightSchedulePlanId);
+
+        if (flightSchedulePlan != null) {
+            Query query = em.createQuery("SELECT fs FROM FlightSchedulePlan fsp JOIN fsp.flightSchedules fs WHERE fs.departureDate BETWEEN :startDate AND :endDate");
+
+            // Calculate the start and end dates for the range
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(inputDate);
+            calendar.add(Calendar.DAY_OF_MONTH, 3);
+            Date endDate = calendar.getTime();
+
+            query.setParameter("startDate", inputDate);
+            query.setParameter("endDate", endDate);
+
+            return query.getResultList();
+        } else {
+            throw new FlightSchedulePlanNotFoundException("Flight Schedule Plan Id " + flightSchedulePlanId + " does not exist!");
+        }
+    }
+
+    
+    @Override
+    public void updateFlightSchedulePlan(FlightSchedulePlan flightSchedulePlan) throws FlightSchedulePlanNotFoundException, UpdateFlightSchedulePlanException
     {
         if(flightSchedulePlan != null && flightSchedulePlan.getFlightSchedulePlanId() != null)
         {
