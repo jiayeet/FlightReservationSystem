@@ -8,6 +8,7 @@ import ejb.session.stateless.CreditCardSessionBeanRemote;
 import ejb.session.stateless.CustomerSessionBeanRemote;
 import ejb.session.stateless.FlightReservationSessionBeanRemote;
 import ejb.session.stateless.FlightSchedulePlanSessionBeanRemote;
+import ejb.session.stateless.FlightSessionBeanRemote;
 import ejb.session.stateless.FlightTicketSessionBeanRemote;
 import ejb.session.stateless.PassengerSessionBeanRemote;
 import javax.ejb.EJB;
@@ -18,6 +19,8 @@ import javax.ejb.EJB;
  */
 public class Main {
 
+    @EJB
+    private static FlightSessionBeanRemote flightSessionBeanRemote;
     @EJB
     private static CreditCardSessionBeanRemote creditCardSessionBeanRemote;  
     @EJB
@@ -41,7 +44,7 @@ public class Main {
         if(passengerSessionBeanRemote == null){
             System.out.println("test");
         }
-        MainApp mainApp = new MainApp(customerSessionBeanRemote, passengerSessionBeanRemote, flightReservationSessionBeanRemote, flightTicketSessionBeanRemote, flightSchedulePlanSessionBeanRemote, creditCardSessionBeanRemote);
+        MainApp mainApp = new MainApp(customerSessionBeanRemote, passengerSessionBeanRemote, flightReservationSessionBeanRemote, flightTicketSessionBeanRemote, flightSchedulePlanSessionBeanRemote, creditCardSessionBeanRemote, flightSessionBeanRemote);
         mainApp.runApp();  
     }
     

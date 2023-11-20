@@ -11,7 +11,7 @@ import ejb.session.stateless.FlightScheduleSessionBeanRemote;
 import ejb.session.stateless.FlightSessionBeanRemote;
 import entity.AircraftConfiguration;
 import entity.CabinClass;
-import entity.DuplicateFareBasisCodeException;
+import util.exception.DuplicateFareBasisCodeException;
 import entity.Fare;
 import entity.Flight;
 import entity.FlightRoute;
@@ -279,12 +279,12 @@ public class ScheduleManagerModule {
                 flight.setAircraftConfiguration(newAircraftConfiguration);
             }
 
-            System.out.print("Enter Flight Schedule Plan ID (blank if no change)> ");
+            /*System.out.print("Enter Flight Schedule Plan ID (blank if no change)> ");
             input = scanner.nextLine().trim();
             if (input.length() > 0) {
                 //FlightSchedulePlan newFlightSchedulePlan = flightSchedulePlanSessionBeanRemote.retrieveFlightSchedulePlanByFlightSchedulePlanID(Long.valueOf(input));
                 //flight.setFlightSchedulePlan(newFlightSchedulePlan);
-            }
+            }*/
 
             flightSessionBeanRemote.updateFlight(flight);
             System.out.println("Flight updated successfully!\n");
