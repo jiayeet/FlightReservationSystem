@@ -64,17 +64,7 @@ public class RoutePlannerModule {
                 }
                 else if(response == 3)
                 {
-                    try
-                    {
-                        System.out.print("Enter Flight Route ID> ");
-                        Long flightRouteId = scanner.nextLong();
-                        FlightRoute flightRouteToRemove = flightRouteSessionBeanRemote.retrieveFlightRouteByFlightRouteId(flightRouteId);
-                        deleteFlightRoute(flightRouteToRemove);
-                    }
-                    catch(FlightRouteNotFoundException ex)
-                    {
-                          System.out.println("An error has occurred: The flight route cannot be found!\n");
-                    } 
+                    deleteFlightRoute();
                 }
                 else if (response == 4)
                 {
@@ -102,10 +92,10 @@ public class RoutePlannerModule {
         System.out.println("*** Flight Reservation System :: Route Planner :: Create New Flight Route ***\n");
         
         try {
-        System.out.print("Enter Origin Airport Name> ");
+        System.out.print("Enter Origin Airport IATA Code> ");
         Airport originAirport = airportSessionBeanRemote.retrieveAirportByIATACode(scanner.nextLine().trim());
         newFlightRoute.setAirportOrigin(originAirport);
-        System.out.print("Enter Destination Airport Name> ");
+        System.out.print("Enter Destination Airport IATA Code> ");
         Airport destinationAirport = airportSessionBeanRemote.retrieveAirportByIATACode(scanner.nextLine().trim());
         newFlightRoute.setAirportDestination(destinationAirport);
         newFlightRoute.setEnabled(Boolean.TRUE);
@@ -153,11 +143,10 @@ public class RoutePlannerModule {
     private void doViewAllFlightRoutes() {
         Scanner scanner = new Scanner(System.in);
         
-        System.out.println("*** Flight Reservation System :: Route Planner :: View All Flight Routes ***\n");
-        
         List<FlightRoute> flightRoutes = flightRouteSessionBeanRemote.retrieveAllFlightRoutes();
 
         if (!flightRoutes.isEmpty()) {
+            System.out.println("*** Flight Reservation System :: Route Planner :: View All Flight Routes ***\n");
             System.out.printf("%8s%20s%20s\n", "Flight Route ID", "Origin AITA Code ", "Destination AITA Code");
             for (FlightRoute flightRoute : flightRoutes) {
                 if (flightRoute.getIsMain() == true) {
@@ -175,30 +164,33 @@ public class RoutePlannerModule {
         scanner.nextLine();
     }
     
-    private void deleteFlightRoute(FlightRoute flightRouteToRemove) {
+    private void deleteFlightRoute() {
         Scanner scanner = new Scanner(System.in);        
         String input;
  
         
         System.out.println("*** Flight Reservation System :: Route Planner :: Delete Flight Route ***\n");
-        System.out.printf("Confirm Delete Flight Route of origin AITA %s and destination AITA %s (Flight Route ID: %d) (Enter 'Y' to Delete)> ", flightRouteToRemove.getAirportOrigin().getAirportName(), flightRouteToRemove.getAirportDestination().getIataAirportCode(), flightRouteToRemove.getFlightRouteId());
-        input = scanner.nextLine().trim();
         
-        if(input.equals("Y"))
-        {
-            try
-            {
+        try {
+            System.out.print("Enter Origin Airport IATA Code> ");
+            String origin = scanner.nextLine().trim();
+            System.out.print("Enter Destination Airport IATA Code> ");
+            String destination = scanner.nextLine().trim();
+            FlightRoute flightRouteToRemove = flightRouteSessionBeanRemote.retrieveFlightRouteByDestinations(origin, destination);
+
+            System.out.printf("Confirm Delete Flight Route of origin AITA %s and destination AITA %s (Flight Route ID: %d) (Enter 'Y' to Delete)> ", flightRouteToRemove.getAirportOrigin().getIataAirportCode(), flightRouteToRemove.getAirportDestination().getIataAirportCode(), flightRouteToRemove.getFlightRouteId());
+            input = scanner.nextLine().trim();
+
+            if (input.equals("Y")) {
+
                 flightRouteSessionBeanRemote.deleteFlightRoute(flightRouteToRemove.getFlightRouteId());
                 System.out.println("Flight Route deleted successfully!\n");
+
+            } else {
+                System.out.println("Flight Route NOT deleted!\n");
             }
-            catch (FlightRouteNotFoundException| DeleteFlightRouteException ex) 
-            {
-                System.out.println("An error has occurred while deleting the flight route: " + ex.getMessage() + "\n");
-            }
-        }
-        else
-        {
-            System.out.println("Flight Route NOT deleted!\n");
+        } catch (FlightRouteNotFoundException | DeleteFlightRouteException ex) {
+            System.out.println("An error has occurred while deleting the flight route: " + ex.getMessage() + "\n");
         }
     }
 }

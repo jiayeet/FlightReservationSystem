@@ -91,7 +91,7 @@ public class FlightRouteSessionBean implements FlightRouteSessionBeanRemote, Fli
     public List<FlightRoute> retrieveAllFlightRoutes()
     {
         Query query = em.createQuery("SELECT fr FROM FlightRoute fr " +
-                                     "ORDER BY fr.airportOrigin.airportName ASC");
+                                     "ORDER BY fr.airportOrigin.iataAirportCode ASC");
         
         return query.getResultList();
     }
