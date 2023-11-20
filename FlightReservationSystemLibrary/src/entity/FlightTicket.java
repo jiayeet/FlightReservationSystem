@@ -45,7 +45,7 @@ public class FlightTicket implements Serializable {
     private Passenger passenger;
     
     @ManyToOne
-    @JoinColumn(name = "flightReservationId")
+    @JoinColumn(name = "flightReservationId", nullable = false)
     private FlightReservation flightReservation;
 
     public FlightTicket() {

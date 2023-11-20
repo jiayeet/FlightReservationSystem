@@ -57,7 +57,6 @@ public class FlightSessionBean implements FlightSessionBeanRemote, FlightSession
                 throw new GeneralException("An unexpected error has occurred: " + ex.getMessage());
             }
         }
-
     }
     
     @Override

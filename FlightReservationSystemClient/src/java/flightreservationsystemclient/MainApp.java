@@ -161,7 +161,7 @@ public class MainApp {
             } else if (currentEmployee.getUserRole() == EmployeeUserRoleEnum.SCHEDULEMANAGER) {
                 scheduleManagerModule.scheduleManagerMenu();
                 break;
-            } else if (currentEmployee.getUserRole() == EmployeeUserRoleEnum.SYSTEMADMINISTRATOR) {
+            } else if (currentEmployee.getUserRole() == EmployeeUserRoleEnum.SALESMANAGER) {
                 salesManagerModule.salesManagerMenu();
                 break;
             } else {

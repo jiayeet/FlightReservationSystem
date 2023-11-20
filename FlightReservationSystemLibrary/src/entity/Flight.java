@@ -31,22 +31,22 @@ public class Flight implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long flightId;
     @Column(length = 10)
-    //@NotNull
-    //@Size(min = 1, max = 10)
+    @NotNull
+    @Size(min = 1, max = 10)
     private String flightNumber;
-    //@Column(nullable = false)
-    //@NotNull
+    @Column(nullable = false)
+    @NotNull
     private Boolean enabled;
-    //@Column(nullable = false)
-    //@NotNull
+    @Column(nullable = false)
+    @NotNull
     private Boolean isMain;
     
     @OneToOne
-    @JoinColumn(name = "aircraftconfig_id")
+    @JoinColumn(name = "aircraftconfig_id", nullable = false)
     private AircraftConfiguration aircraftConfiguration;
     
     @ManyToOne
-    @JoinColumn(name = "flightRouteId")
+    @JoinColumn(name = "flightRouteId", nullable = false)
     private FlightRoute flightRoute;
     
     @OneToOne
