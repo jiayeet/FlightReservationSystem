@@ -389,7 +389,7 @@ public class FlightSchedulePlanSessionBean implements FlightSchedulePlanSessionB
 
     
     @Override
-    public void updateFlightSchedulePlan(FlightSchedulePlan flightSchedulePlan) throws FlightSchedulePlanNotFoundException, UpdateFlightSchedulePlanException
+    public void updateFlightSchedulePlan(FlightSchedulePlan flightSchedulePlan) throws FlightSchedulePlanNotFoundException, UpdateFlightSchedulePlanException, InputDataValidationException
     {
         if(flightSchedulePlan != null && flightSchedulePlan.getFlightSchedulePlanId() != null)
         {

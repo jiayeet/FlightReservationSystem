@@ -84,7 +84,7 @@ public class ScheduleManagerModule {
         
         while(true)
         {
-            System.out.println("*** Flight Management System :: Route Planner***\n");
+            System.out.println("*** Flight Management System :: Schedule Manager ***\n");
             System.out.println("1: Create Flight");
             System.out.println("2: View All Flights");
             System.out.println("3: View Flight Details");
@@ -813,7 +813,7 @@ public class ScheduleManagerModule {
             
             for (FlightSchedule flightSchedule : flightSchedules)
             {
-                System.out.printf("%19s%22s%20s%20s\n\n", flightSchedule.getFlightScheduleId(), outputDateFormat.format(flightSchedule.getArrivalDateTime()), outputDateFormat.format(flightSchedule.getDepartureDateTime()), flightSchedule.getFlightDurationHours() + " Hours " + flightSchedule.getFlightDurationMinutes() + " Minutes");
+                System.out.printf("%19s%22s%20s%20s\n\n", flightSchedule.getFlightScheduleId(), outputDateFormat.format(flightSchedule.getDepartureDateTime()), outputDateFormat.format(flightSchedule.getArrivalDateTime()), flightSchedule.getFlightDurationHours() + " Hours " + flightSchedule.getFlightDurationMinutes() + " Minutes");
             }
 
             

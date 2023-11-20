@@ -49,7 +49,7 @@ public class FlightReservation implements Serializable {
     @ManyToMany(mappedBy = "flightReservations")
     private List<CabinClass> cabinClasses;
 
-
+    
     public FlightReservation() {
         flightTickets = new ArrayList<>();
         inBoundFlightSchedules = new ArrayList<>();
@@ -160,6 +160,48 @@ public class FlightReservation implements Serializable {
     @Override
     public String toString() {
         return "entity.FlightReservation[ id=" + flightReservationId + " ]";
+    }
+
+    /**
+     * @return the inBoundFlightSchedules
+     */
+    public List<FlightSchedule> getInBoundFlightSchedules() {
+        return inBoundFlightSchedules;
+    }
+
+    /**
+     * @param inBoundFlightSchedules the inBoundFlightSchedules to set
+     */
+    public void setInBoundFlightSchedules(List<FlightSchedule> inBoundFlightSchedules) {
+        this.inBoundFlightSchedules = inBoundFlightSchedules;
+    }
+
+    /**
+     * @return the outBoundFlightSchedules
+     */
+    public List<FlightSchedule> getOutBoundFlightSchedules() {
+        return outBoundFlightSchedules;
+    }
+
+    /**
+     * @param outBoundFlightSchedules the outBoundFlightSchedules to set
+     */
+    public void setOutBoundFlightSchedules(List<FlightSchedule> outBoundFlightSchedules) {
+        this.outBoundFlightSchedules = outBoundFlightSchedules;
+    }
+
+    /**
+     * @return the cabinClasses
+     */
+    public List<CabinClass> getCabinClasses() {
+        return cabinClasses;
+    }
+
+    /**
+     * @param cabinClasses the cabinClasses to set
+     */
+    public void setCabinClasses(List<CabinClass> cabinClasses) {
+        this.cabinClasses = cabinClasses;
     }
     
 }

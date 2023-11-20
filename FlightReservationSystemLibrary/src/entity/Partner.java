@@ -5,11 +5,13 @@
 package entity;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -41,6 +43,9 @@ public class Partner implements Serializable {
     @Size(min = 6, max = 32)
     private String password;
 
+    @OneToMany
+    private List<FlightReservation> flightReservations;
+    
     public Partner() {
     }
 
@@ -140,6 +145,20 @@ public class Partner implements Serializable {
     @Override
     public String toString() {
         return "entity.Partner[ id=" + partnerId + " ]";
+    }
+
+    /**
+     * @return the flightReservations
+     */
+    public List<FlightReservation> getFlightReservations() {
+        return flightReservations;
+    }
+
+    /**
+     * @param flightReservations the flightReservations to set
+     */
+    public void setFlightReservations(List<FlightReservation> flightReservations) {
+        this.flightReservations = flightReservations;
     }
     
 }

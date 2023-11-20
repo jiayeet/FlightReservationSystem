@@ -30,15 +30,15 @@ public class Flight implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long flightId;
-    @Column(length = 10)
-    //@NotNull
-    //@Size(min = 1, max = 10)
+    @Column(length = 10, unique = true)
+    @NotNull
+    @Size(min = 1, max = 10)
     private String flightNumber;
-    //@Column(nullable = false)
-    //@NotNull
+    @Column(nullable = false)
+    @NotNull
     private Boolean enabled;
-    //@Column(nullable = false)
-    //@NotNull
+    @Column(nullable = false)
+    @NotNull
     private Boolean isMain;
     
     @OneToOne
