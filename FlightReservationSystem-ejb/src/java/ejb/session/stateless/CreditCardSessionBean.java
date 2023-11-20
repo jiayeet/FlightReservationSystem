@@ -42,10 +42,10 @@ public class CreditCardSessionBean implements CreditCardSessionBeanRemote, Credi
         
         if(constraintViolations.isEmpty())
         {
-        em.persist(newCreditCard);
-        em.flush();
+            em.persist(newCreditCard);
+            em.flush();
         
-        return newCreditCard.getCreditCardRecordId();
+            return newCreditCard.getCreditCardRecordId();
         }
         else
         {

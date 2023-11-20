@@ -77,43 +77,66 @@ public class SalesManagerModule {
     }
     
     
-    private void doViewSeatsInventory() {
+    private void doViewSeatsInventory()
+    {
+        Scanner scanner = new Scanner(System.in);
+        
+        System.out.println("*** Flight Reservation System :: Sales Manager :: View Seats Inventory ***\n");
+        
+        try
+        {
+            System.out.print("Enter a flight number> ");
+            Flight flight = flightSessionBeanRemote.retrieveFlightByFlightNumber(scanner.nextLine().trim());
+            
+            System.out.print("Enter an associated flight schedule id> ");
+        }
+        
+        catch(FlightNotFoundException ex){
+            System.out.println("An error has occurred: Flight does not exist!\n");
+        }
+        
+        
+        
     }
     
-    private void doViewFlightReservations() {
+    private void doViewFlightReservations()
+    {
         Scanner scanner = new Scanner(System.in);
         
         System.out.println("*** Flight Reservation System :: Sales Manager :: View Flight Reservations ***\n");
         
-        try {
-        System.out.println("Please input a flight number> ");
-        Flight inputFlight = flightSessionBeanRemote.retrieveFlightByFlightId(Long.valueOf(scanner.nextLine().trim()));
+        try
+        {
+            System.out.print("Please input a flight number> ");
+            Flight inputFlight = flightSessionBeanRemote.retrieveFlightByFlightId(Long.valueOf(scanner.nextLine().trim()));
         
-        System.out.println("Please input the id of a flight schedule> ");
-        FlightSchedule flightSchedule = flightScheduleSessionBeanRemote.retrieveFlightScheduleByFlightScheduleId(Long.valueOf(scanner.nextLine().trim()));
+            System.out.print("Please input the id of a flight schedule> ");
+            FlightSchedule flightSchedule = flightScheduleSessionBeanRemote.retrieveFlightScheduleByFlightScheduleId(Long.valueOf(scanner.nextLine().trim()));
         
-        List<FlightReservation> inBoundFlightReservations = flightSchedule.getInBoundFlightReservations();
-        List<FlightReservation> outBoundFlightReservations = flightSchedule.getOutBoundFlightReservations();
-        System.out.printf("%8s\n", "Flight Reservation ID Inbound");
+            List<FlightReservation> inBoundFlightReservations = flightSchedule.getInBoundFlightReservations();
+            List<FlightReservation> outBoundFlightReservations = flightSchedule.getOutBoundFlightReservations();
+            System.out.printf("%8s\n", "Flight Reservation ID Inbound");
 
-        for(FlightReservation flightReservation:inBoundFlightReservations)
-        {
-            System.out.printf("%8s\n", flightReservation.getFlightReservationId());
-        }
+            for(FlightReservation flightReservation:inBoundFlightReservations)
+            {
+                System.out.printf("%8s\n", flightReservation.getFlightReservationId());
+            }
         
-        System.out.printf("%8s\n", "Flight Reservation ID outbound");
-        for(FlightReservation flightReservation:outBoundFlightReservations)
-        {
-            System.out.printf("%8s\n", flightReservation.getFlightReservationId());
-        }
+            System.out.printf("%8s\n", "Flight Reservation ID outbound");
+            for(FlightReservation flightReservation:outBoundFlightReservations)
+            {
+                System.out.printf("%8s\n", flightReservation.getFlightReservationId());
+            }
         
-        System.out.print("Press any key to continue...> ");
-        scanner.nextLine();
+            System.out.print("Press any key to continue...> ");
+            scanner.nextLine();
         }
-        catch (FlightNotFoundException ex){
+        catch (FlightNotFoundException ex)
+        {
             System.out.println("An error has occurred: The flight route is not found!\n");
         }
-        catch (FlightScheduleNotFoundException ex){
+        catch (FlightScheduleNotFoundException ex)
+        {
             System.out.println("An error has occurred: The flight schedule is not found!\n");
         }
     }

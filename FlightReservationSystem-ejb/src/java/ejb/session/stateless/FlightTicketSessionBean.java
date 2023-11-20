@@ -22,6 +22,10 @@ public class FlightTicketSessionBean implements FlightTicketSessionBeanRemote, F
     @PersistenceContext(unitName = "FlightReservationSystem-ejbPU")
     private EntityManager em;
 
+    public FlightTicketSessionBean()
+    {
+    }
+
     @Override
     public Long createNewFlightTicket(FlightTicket newFlightTicket)
     {

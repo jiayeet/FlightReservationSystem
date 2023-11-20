@@ -4,23 +4,29 @@
  */
 package ejb.session.stateless;
 
-import entity.DuplicateFareBasisCodeException;
+import util.exception.DuplicateFareBasisCodeException;
 import entity.Fare;
 import entity.Flight;
 import entity.FlightSchedule;
 import entity.FlightSchedulePlan;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBContext;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.persistence.Query;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import util.enumeration.FlightScheduleType;
 import util.exception.CreateNewFlightSchedulePlanException;
 import util.exception.DeleteFlightSchedulePlanException;
@@ -28,6 +34,7 @@ import util.exception.FlightNotFoundException;
 import util.exception.FlightSchedulePlanExistException;
 import util.exception.FlightSchedulePlanNotFoundException;
 import util.exception.GeneralException;
+import util.exception.InputDataValidationException;
 import util.exception.UpdateFlightSchedulePlanException;
 
 /**
@@ -47,12 +54,17 @@ public class FlightSchedulePlanSessionBean implements FlightSchedulePlanSessionB
     @EJB
     private AircraftConfigurationSessionBeanLocal aircraftConfigurationSessionBeanLocal;
 
+    // Added for bean validation
+    private final ValidatorFactory validatorFactory;
+    private final Validator validator;
     
     public FlightSchedulePlanSessionBean() 
     {
+        validatorFactory = Validation.buildDefaultValidatorFactory();
+        validator = validatorFactory.getValidator();
     }
     
-    
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public Long createNewFlightSchedulePlan(Long flightId, FlightSchedulePlan newFlightSchedulePlan) throws FlightSchedulePlanExistException, GeneralException, CreateNewFlightSchedulePlanException
     {
@@ -94,9 +106,9 @@ public class FlightSchedulePlanSessionBean implements FlightSchedulePlanSessionB
                     
                     if (!flightSchedulePlanIdsWithOverlap.isEmpty())
                     {
-                        // eJBContext.setRollbackOnly();
+                        eJBContext.setRollbackOnly();
                         
-                        throw new CreateNewFlightSchedulePlanException("Overlap with existing schedules " + flightSchedulePlanIdsWithOverlap.toString() + " for Flight Number : " + flightId + "\n");
+                        throw new CreateNewFlightSchedulePlanException("Overlap with existing schedules " + flightSchedulePlanIdsWithOverlap.toString() + " for Flight Id : " + flightId + "\n");
                     }
                 }
                 
@@ -130,7 +142,7 @@ public class FlightSchedulePlanSessionBean implements FlightSchedulePlanSessionB
       
     }
     
-    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public Long createComplementaryFlightSchedulePlan(Long mainFlightSchedulePlanId, int layoverDuration, String returnFlightNumber) throws CreateNewFlightSchedulePlanException
     {
@@ -183,6 +195,7 @@ public class FlightSchedulePlanSessionBean implements FlightSchedulePlanSessionB
                     complementaryArrivalDateTimeCalendar.add(GregorianCalendar.HOUR_OF_DAY, complementaryFlightSchedule.getFlightDurationHours());
                     complementaryArrivalDateTimeCalendar.add(GregorianCalendar.MINUTE, complementaryFlightSchedule.getFlightDurationMinutes());
                     complementaryFlightSchedule.setArrivalDateTime(complementaryArrivalDateTimeCalendar.getTime());
+                    complementaryFlightSchedule.setEnabled(true);
 
                     complementaryFlightSchedules.add(complementaryFlightSchedule);
                 }
@@ -223,7 +236,7 @@ public class FlightSchedulePlanSessionBean implements FlightSchedulePlanSessionB
 
                     if (!flightSchedulePlanIdsWithOverlap.isEmpty())
                     {
-                        // eJBContext.setRollbackOnly();
+                        eJBContext.setRollbackOnly();
 
                         throw new CreateNewFlightSchedulePlanException("Overlap with existing complementary schedules " + flightSchedulePlanIdsWithOverlap.toString() + " for return Flight Number : " + returnFlight.getFlightNumber() + "\n");
                     }
@@ -263,6 +276,7 @@ public class FlightSchedulePlanSessionBean implements FlightSchedulePlanSessionB
         {
             // Lazily Load to-Many associations
             flightSchedulePlan.getFlightSchedules().size();
+            flightSchedulePlan.getFares().size();
             return flightSchedulePlan;
         }
         else
@@ -310,39 +324,97 @@ public class FlightSchedulePlanSessionBean implements FlightSchedulePlanSessionB
     }
     
     @Override
-    public void updateFlightSchedulePlan(FlightSchedulePlan flightSchedulePlan) throws FlightSchedulePlanNotFoundException, UpdateFlightSchedulePlanException
+    public void updateFlightSchedulePlan(FlightSchedulePlan flightSchedulePlan) throws FlightSchedulePlanNotFoundException, UpdateFlightSchedulePlanException, InputDataValidationException
     {
         if(flightSchedulePlan != null && flightSchedulePlan.getFlightSchedulePlanId() != null)
         {
-            FlightSchedulePlan flightSchedulePlanToUpdate = retrieveFlightSchedulePlanByFlightSchedulePlanId(flightSchedulePlan.getFlightSchedulePlanId());
+            Set<ConstraintViolation<FlightSchedulePlan>>constraintViolations = validator.validate(flightSchedulePlan);
             
-            //TODO: Update Fares and Dates
+            if (constraintViolations.isEmpty())
+            {
+                FlightSchedulePlan flightSchedulePlanToUpdate = retrieveFlightSchedulePlanByFlightSchedulePlanId(flightSchedulePlan.getFlightSchedulePlanId());
+            
+                if (flightSchedulePlanToUpdate.getFlightSchedulePlanId().equals(flightSchedulePlan.getFlightSchedulePlanId()))
+                {
+                    flightSchedulePlanToUpdate.setFlightNumber(flightSchedulePlan.getFlightNumber());
+                    flightSchedulePlanToUpdate.setStartDateTime(flightSchedulePlan.getStartDateTime());
+                    flightSchedulePlanToUpdate.setEndDate(flightSchedulePlan.getEndDate());
+                    flightSchedulePlanToUpdate.setFlightScheduleType(flightSchedulePlan.getFlightScheduleType());
+                    flightSchedulePlanToUpdate.setEnabled(flightSchedulePlanToUpdate.getEnabled());
+                    flightSchedulePlanToUpdate.setDayOfWeek(flightSchedulePlan.getDayOfWeek());
+                    flightSchedulePlanToUpdate.setnDay(flightSchedulePlan.getnDay());
+                    
+                    List<FlightSchedule> updatedFlightSchedules = flightSchedulePlan.getFlightSchedules();
+                }
+                else
+                {
+                    throw new UpdateFlightSchedulePlanException("Id of flight schedule plan to be updated does not match the existing record");
+                }
+            }
+            else
+            {
+                throw new InputDataValidationException(prepareInputDataValidationErrorsMessage(constraintViolations));
+            }
+            
                 
         }
         else
         {
-            throw new FlightSchedulePlanNotFoundException("Flight Schedule Plan ID not provided for flight schedule plan to be updated, flight schedule plan does not exist");
+            throw new FlightSchedulePlanNotFoundException("Flight Schedule Plan ID not provided for flight schedule plan to be updated");
         }
     }
     
     @Override
-    public void deleteFlight(Long flightSchedulePlanId) throws FlightSchedulePlanNotFoundException, DeleteFlightSchedulePlanException
+    public void deleteFlightSchedulePlan(Long flightSchedulePlanId) throws FlightNotFoundException, FlightSchedulePlanNotFoundException, DeleteFlightSchedulePlanException
     {
-        /*FlightSchedulePlan flightSchedulePlanToRemove = retrieveFlightSchedulePlanByFlightSchedulePlanId(flightSchedulePlanId);
+        FlightSchedulePlan flightSchedulePlanToRemove = retrieveFlightSchedulePlanByFlightSchedulePlanId(flightSchedulePlanId);
+        List<FlightSchedule> flightSchedules = retrieveFlightSchedulesByFlightSchedulePlanId(flightSchedulePlanId);
+        Flight flight = flightSessionBeanLocal.retrieveFlightByFlightNumber(flightSchedulePlanToRemove.getFlightNumber());
+        boolean isUsed = false;
         
-        if(flightSchedulePlanToRemove.getFlight() == null && flightSchedulePlanToRemove.getFlightSchedules() == null && flightSchedulePlanToRemove.getFare() == null)
+        for (FlightSchedule flightSchedule : flightSchedules)
         {
+            if (!flightSchedule.getInBoundFlightReservations().isEmpty() && !flightSchedule.getOutBoundFlightReservations().isEmpty())
+            {
+                isUsed = true;
+                break;
+            }
+        }
+        
+        if(!isUsed)
+        {
+            flight.getFlightSchedulePlans().remove(flightSchedulePlanToRemove);
+            for (FlightSchedule flightSchedule : flightSchedules)
+            {
+                flightSchedulePlanToRemove.getFlightSchedules().remove(flightSchedule);
+                em.remove(flightSchedule);
+            }
+            
+            for (Fare fare : flightSchedulePlanToRemove.getFares())
+            {
+                flightSchedulePlanToRemove.getFares().remove(fare);
+                em.remove(fare);
+            }
+            
+            if (flightSchedulePlanToRemove.getComplementaryFlightSchedulePlan() != null)
+            {
+                // Calling method recursively
+                deleteFlightSchedulePlan(flightSchedulePlanToRemove.getComplementaryFlightSchedulePlan().getFlightSchedulePlanId());
+            }
+            
             em.remove(flightSchedulePlanToRemove);
         }
-        else if(flightSchedulePlanToRemove.getFlight() == null && flightSchedulePlanToRemove.getFlightSchedules() == null && flightSchedulePlanToRemove.getFare() == null)
+        else if(isUsed)
         {
             flightSchedulePlanToRemove.setEnabled(Boolean.FALSE);
-            throw new DeleteFlightSchedulePlanException("Flight Schedule Plan ID " + flightSchedulePlanId + " has been disabled due to existing associations.");
+            
+            for (FlightSchedule flightSchedule : flightSchedulePlanToRemove.getFlightSchedules())
+            {
+                flightSchedule.setEnabled(Boolean.FALSE);
+            }
+            
+            throw new DeleteFlightSchedulePlanException("Flight Schedule Plan ID " + flightSchedulePlanId + " is associated with existing flight tickets and has been disabled instead.");
         }
-        else
-        {
-            throw new DeleteFlightSchedulePlanException("Flight Schedule Plan ID " + flightSchedulePlanId + " is associated with existing aircraft configurations, flight routes and flight schedule plans and cannot be deleted!");
-        }*/
     }
     
     @Override
@@ -388,6 +460,18 @@ public class FlightSchedulePlanSessionBean implements FlightSchedulePlanSessionB
                 flightSchedulePlan.getFares().add(newComplementaryFare);
             }
         }
+    }
+    
+    private String prepareInputDataValidationErrorsMessage(Set<ConstraintViolation<FlightSchedulePlan>>constraintViolations)
+    {
+        String msg = "Input data validation error!:";
+            
+        for(ConstraintViolation constraintViolation:constraintViolations)
+        {
+            msg += "\n\t" + constraintViolation.getPropertyPath() + " - " + constraintViolation.getInvalidValue() + "; " + constraintViolation.getMessage();
+        }
+        
+        return msg;
     }
 }
 

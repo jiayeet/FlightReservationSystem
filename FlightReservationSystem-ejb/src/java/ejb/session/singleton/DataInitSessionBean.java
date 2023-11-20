@@ -9,6 +9,7 @@ import ejb.session.stateless.AircraftTypeSessionBeanLocal;
 import ejb.session.stateless.AirportSessionBeanLocal;
 import ejb.session.stateless.EmployeeSessionBeanLocal;
 import ejb.session.stateless.FlightRouteSessionBeanLocal;
+import ejb.session.stateless.FlightSchedulePlanSessionBeanLocal;
 import ejb.session.stateless.FlightSessionBeanLocal;
 import ejb.session.stateless.PartnerSessionBeanLocal;
 import entity.AircraftType;
@@ -36,20 +37,21 @@ import util.exception.UnknownPersistenceException;
 @Startup
 public class DataInitSessionBean {
 
-    @EJB(name = "FlightSessionBeanLocal")
+    @EJB
     private FlightSessionBeanLocal flightSessionBeanLocal;
-    @EJB(name = "FlightRouteSessionBeanLocal")
+    @EJB
     private FlightRouteSessionBeanLocal flightRouteSessionBeanLocal;
-    @EJB(name = "AircraftConfigurationSessionBeanLocal")
+    @EJB
     private AircraftConfigurationSessionBeanLocal aircraftConfigurationSessionBeanLocal;
-    @EJB(name = "AircraftTypeSessionBeanLocal")
+    @EJB
     private AircraftTypeSessionBeanLocal aircraftTypeSessionBeanLocal;
-    @EJB(name = "PartnerSessionBeanLocal")
+    @EJB
     private PartnerSessionBeanLocal partnerSessionBeanLocal;
-    @EJB(name = "EmployeeSessionBeanLocal")
+    @EJB
     private EmployeeSessionBeanLocal employeeSessionBeanLocal;
-    @EJB(name = "AirportSessionBeanLocal")
+    @EJB
     private AirportSessionBeanLocal airportSessionBeanLocal;
+    
     
     @PersistenceContext(unitName = "FlightReservationSystem-ejbPU")
     private EntityManager em;

@@ -19,6 +19,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import util.enumeration.FlightScheduleType;
 
 /**
@@ -33,9 +35,12 @@ public class FlightSchedulePlan implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long flightSchedulePlanId;
     @Column(nullable = false, length = 5)
+    @NotNull
+    @Size(min = 1, max = 5)
     private String flightNumber;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @NotNull
     private FlightScheduleType FlightScheduleType;
     // dayOfWeek maps integer values to the respective days of the week, with Sunday = 1, Saturday = 7 following Calendar.DAY_OF_WEEK
     @Column
@@ -51,6 +56,7 @@ public class FlightSchedulePlan implements Serializable {
     @Column
     private int layoverDuration;
     @Column(nullable = false)
+    @NotNull
     private Boolean enabled;
     
     @OneToMany

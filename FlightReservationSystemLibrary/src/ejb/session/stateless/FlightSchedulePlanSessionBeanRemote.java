@@ -4,7 +4,7 @@
  */
 package ejb.session.stateless;
 
-import entity.DuplicateFareBasisCodeException;
+import util.exception.DuplicateFareBasisCodeException;
 import entity.Fare;
 import entity.FlightSchedule;
 import entity.FlightSchedulePlan;
@@ -16,6 +16,7 @@ import util.exception.FlightNotFoundException;
 import util.exception.FlightSchedulePlanExistException;
 import util.exception.FlightSchedulePlanNotFoundException;
 import util.exception.GeneralException;
+import util.exception.InputDataValidationException;
 import util.exception.UpdateFlightSchedulePlanException;
 
 /**
@@ -31,9 +32,9 @@ public interface FlightSchedulePlanSessionBeanRemote {
     
     public FlightSchedulePlan retrieveFlightSchedulePlanByFlightSchedulePlanId(Long flightSchedulePlanId) throws FlightSchedulePlanNotFoundException;
     
-    public void updateFlightSchedulePlan(FlightSchedulePlan flightSchedulePlan) throws FlightSchedulePlanNotFoundException, UpdateFlightSchedulePlanException;
+    public void updateFlightSchedulePlan(FlightSchedulePlan flightSchedulePlan) throws FlightSchedulePlanNotFoundException, UpdateFlightSchedulePlanException, InputDataValidationException;
     
-    public void deleteFlight(Long flightSchedulePlanId) throws FlightSchedulePlanNotFoundException, DeleteFlightSchedulePlanException;
+    public void deleteFlightSchedulePlan(Long flightSchedulePlanId) throws FlightNotFoundException, FlightSchedulePlanNotFoundException, DeleteFlightSchedulePlanException;
     
     public Long createComplementaryFlightSchedulePlan(Long mainFlightSchedulePlanId, int layoverDuration, String returnFlightNumber) throws CreateNewFlightSchedulePlanException;
     

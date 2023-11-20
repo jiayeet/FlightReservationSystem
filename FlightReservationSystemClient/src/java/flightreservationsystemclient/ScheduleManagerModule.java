@@ -11,7 +11,7 @@ import ejb.session.stateless.FlightScheduleSessionBeanRemote;
 import ejb.session.stateless.FlightSessionBeanRemote;
 import entity.AircraftConfiguration;
 import entity.CabinClass;
-import entity.DuplicateFareBasisCodeException;
+import util.exception.DuplicateFareBasisCodeException;
 import entity.Fare;
 import entity.Flight;
 import entity.FlightRoute;
@@ -25,17 +25,25 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import util.enumeration.FlightScheduleType;
 import util.exception.AircraftConfigurationNotFoundException;
 import util.exception.CreateNewFlightSchedulePlanException;
 import util.exception.DeleteFlightException;
+import util.exception.DeleteFlightSchedulePlanException;
 import util.exception.FlightExistException;
 import util.exception.FlightNotFoundException;
 import util.exception.FlightRouteNotFoundException;
 import util.exception.FlightSchedulePlanExistException;
 import util.exception.FlightSchedulePlanNotFoundException;
 import util.exception.GeneralException;
+import util.exception.InputDataValidationException;
 import util.exception.UpdateFlightException;
+import util.exception.UpdateFlightSchedulePlanException;
 
 /**
  *
@@ -43,14 +51,26 @@ import util.exception.UpdateFlightException;
  */
 public class ScheduleManagerModule {
     
+    private final ValidatorFactory validatorFactory;
+    private final Validator validator;
+    
     private FlightRouteSessionBeanRemote flightRouteSessionBeanRemote;
     private FlightSessionBeanRemote flightSessionBeanRemote;
     private AircraftConfigurationSessionBeanRemote aircraftConfigurationSessionBeanRemote;
     private FlightScheduleSessionBeanRemote flightScheduleSessionBeanRemote;
     private FlightSchedulePlanSessionBeanRemote flightSchedulePlanSessionBeanRemote;
+
+    public ScheduleManagerModule()
+    {
+        validatorFactory = Validation.buildDefaultValidatorFactory();
+        validator = validatorFactory.getValidator();
+    }
+    
+    
     
     public ScheduleManagerModule(FlightRouteSessionBeanRemote flightRouteSessionBeanRemote, FlightSessionBeanRemote flightSessionBeanRemote, AircraftConfigurationSessionBeanRemote aircraftConfigurationSessionBeanRemote,
                                  FlightScheduleSessionBeanRemote flightScheduleSessionBeanRemote, FlightSchedulePlanSessionBeanRemote flightSchedulePlanSessionBeanRemote) {
+        this();
         this.flightRouteSessionBeanRemote = flightRouteSessionBeanRemote;
         this.flightSessionBeanRemote = flightSessionBeanRemote;
         this.aircraftConfigurationSessionBeanRemote = aircraftConfigurationSessionBeanRemote;
@@ -429,6 +449,7 @@ public class ScheduleManagerModule {
                     arrivalDateTimeCalendar.add(GregorianCalendar.MINUTE, newFlightSchedule.getFlightDurationMinutes());
                     newFlightSchedule.setArrivalDateTime(arrivalDateTimeCalendar.getTime());
                     
+                    newFlightSchedule.setEnabled(true);
                     newFlightSchedulePlan.getFlightSchedules().add(newFlightSchedule);
                     
                     if (newFlightSchedulePlan.getFlightScheduleType() == FlightScheduleType.SINGLE)
@@ -498,6 +519,7 @@ public class ScheduleManagerModule {
                     if (arrivalDateTime.before(endDate))
                     {
                         newFlightSchedule.setArrivalDateTime(arrivalDateTime);
+                        newFlightSchedule.setEnabled(true);
                         
                         // Associate newly created flight schedule and flight schedule plan
                         newFlightSchedulePlan.getFlightSchedules().add(newFlightSchedule);
@@ -600,7 +622,8 @@ public class ScheduleManagerModule {
                         if (arrivalDateTime.before(endDate))
                         {
                             newFlightSchedule.setArrivalDateTime(arrivalDateTime);
-
+                            newFlightSchedule.setEnabled(true);
+                            
                             // Associate newly created flight schedule and flight schedule plan
                             newFlightSchedulePlan.getFlightSchedules().add(newFlightSchedule);
                         }
@@ -661,7 +684,7 @@ public class ScheduleManagerModule {
                 System.out.println("No complementary return flight exists. Skipped creating a complementary return flight schedule plan!");
             }
             
-            // TODO - create and persist fares
+            // Create and persist fares
             List<CabinClass> cabinClasses = aircraftConfigurationSessionBeanRemote.retrieveCabinClassesByAircraftConfigurationId(flight.getAircraftConfiguration().getAircraftConfigurationId());
             List<Fare> fares = new ArrayList<>();
             
@@ -817,10 +840,212 @@ public class ScheduleManagerModule {
     }
     
     private void doUpdateFlightSchedulePlan(FlightSchedulePlan flightSchedulePlan) {
+        Scanner scanner = new Scanner(System.in);
+        SimpleDateFormat inputDateFormat = new SimpleDateFormat("dd MMM yy");
+        SimpleDateFormat inputTimeFormat = new SimpleDateFormat("h:mm a");
+        String input;
+        Integer integerInput;
+        
+        
         System.out.println("\n*** Flight Management System :: Schedule Manager :: Update Flight Schedule Plan ***\n");
+        System.out.print("Enter Flight Number (blank if no change)> ");
+        input = scanner.nextLine().trim();
+        if (input.length() > 0)
+        {
+            flightSchedulePlan.setFlightNumber(input);
+        }
+        
+        while(true)
+        {
+            System.out.print("Select Schedule Type (0: No Change, 1: Single, 2: Multiple, 3: Recurrent every N Days, 4: Recurrent every Week)> ");
+            Integer scheduleTypeInt = scanner.nextInt();
+            
+            if(scheduleTypeInt >= 1 && scheduleTypeInt <= 4)
+            {
+                flightSchedulePlan.setFlightScheduleType(FlightScheduleType.values()[scheduleTypeInt-1]);
+                break;
+            }
+            else if (scheduleTypeInt == 0)
+            {
+                break;
+            }
+            else
+            {
+                System.out.println("Invalid option, please try again!\n");
+            }
+        }
+                
+        scanner.nextLine();
+        
+        if (flightSchedulePlan.getFlightScheduleType() == FlightScheduleType.RECURRENTNDAY || flightSchedulePlan.getFlightScheduleType() == FlightScheduleType.RECURRENTWEEKLY)
+        {
+            if (flightSchedulePlan.getFlightScheduleType() == FlightScheduleType.RECURRENTNDAY)
+            {
+                System.out.print("Enter NDay (zero or negative number if no change)> ");
+                integerInput = scanner.nextInt();
+                if (integerInput > 0)
+                {
+                    flightSchedulePlan.setnDay(integerInput);
+                }
+                
+                scanner.nextLine();
+            }
+            else if (flightSchedulePlan.getFlightScheduleType() == FlightScheduleType.RECURRENTWEEKLY)
+            {
+                System.out.print("Enter Day of Week (blank if no change)> ");
+                input = scanner.nextLine().trim();
+                
+                Calendar calendar = Calendar.getInstance();
+                
+                switch(input.toLowerCase())
+                {
+                    case "sunday":
+                        calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+                        break;
+                    case "monday":
+                        calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+                        break;
+                    case "tuesday":
+                        calendar.set(Calendar.DAY_OF_WEEK, Calendar.TUESDAY);
+                        break;
+                    case "wednesday":
+                        calendar.set(Calendar.DAY_OF_WEEK, Calendar.WEDNESDAY);
+                        break;
+                    case "thursday":
+                        calendar.set(Calendar.DAY_OF_WEEK, Calendar.THURSDAY);
+                        break;
+                    case "friday":
+                        calendar.set(Calendar.DAY_OF_WEEK, Calendar.FRIDAY);
+                        break;
+                    case "saturday":
+                        calendar.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
+                        break;
+                    default:
+                        System.out.println("Invalid Day Of Week");
+                }
+                
+                flightSchedulePlan.setDayOfWeek(calendar.get(Calendar.DAY_OF_WEEK));
+            }
+            
+            try
+            {
+                System.out.print("Enter Departure Time (h:mm AM/PM) (blank if no change)> ");
+                String departureTimeInput = scanner.nextLine().trim();
+                System.out.print("Enter Flight Schedule Plan Start Date (dd mmm yy)(blank if no change)> ");
+                String startDateInput = scanner.nextLine().trim();
+                
+                if (departureTimeInput.length() > 0 && startDateInput.length() > 0)
+                {
+                    Date departureTime = inputTimeFormat.parse(departureTimeInput);
+                    Date startDate = inputDateFormat.parse(startDateInput);
+                    startDate.setHours(departureTime.getHours());
+                    startDate.setMinutes(departureTime.getMinutes());
+                    flightSchedulePlan.setStartDateTime(startDate);
+                }
+                else if (departureTimeInput.length() == 0 && startDateInput.length() > 0)
+                {
+                    Date startDate = inputDateFormat.parse(startDateInput);
+                    Date startDateToUpdate = flightSchedulePlan.getStartDateTime();
+                    startDate.setHours(startDateToUpdate.getHours());
+                    startDate.setMinutes(startDateToUpdate.getMinutes());
+                    flightSchedulePlan.setStartDateTime(startDate);
+                }
+                else if (departureTimeInput.length() > 0 && startDateInput.length() == 0)
+                {
+                    Date departureTime = inputTimeFormat.parse(departureTimeInput);
+                    Date startDateToUpdate = flightSchedulePlan.getStartDateTime();
+                    startDateToUpdate.setHours(departureTime.getHours());
+                    startDateToUpdate.setMinutes(departureTime.getMinutes());
+                    flightSchedulePlan.setStartDateTime(startDateToUpdate);
+                }
+                
+                System.out.print("Enter Flight Schedule Plan End Date (dd mmm yy) (blank if no change)> ");
+                String endDateInput = scanner.nextLine().trim();
+                if (endDateInput.length() > 0)
+                {
+                    Date endDate = inputDateFormat.parse(endDateInput);
+                    endDate.setHours(23);
+                    endDate.setMinutes(59);
+                    flightSchedulePlan.setEndDate(endDate);
+                }
+            }
+            catch(ParseException ex)
+            {
+                System.out.println("Invalid date/time input!\n");
+            }
+        }
+        
+        if (flightSchedulePlan.getMainFlightSchedulePlan() == null)
+        {
+            System.out.print("Enter layover duration (zero or negative number if no change)> ");
+            integerInput = scanner.nextInt();
+            if (integerInput > 0)
+            {
+                flightSchedulePlan.setLayoverDuration(integerInput);
+            }
+        }
+        
+        Set<ConstraintViolation<FlightSchedulePlan>>constraintViolations = validator.validate(flightSchedulePlan);
+        
+        if (constraintViolations.isEmpty())
+        {
+            try
+            {
+                flightSchedulePlanSessionBeanRemote.updateFlightSchedulePlan(flightSchedulePlan);
+                System.out.println("Flight schedule plan updated successfully!\n");
+            }
+            catch(FlightSchedulePlanNotFoundException | UpdateFlightSchedulePlanException ex)
+            {
+                System.out.println("An error has occurred while updating product: " + ex.getMessage() + "\n");
+            }
+            catch(InputDataValidationException ex)
+            {
+                System.out.println(ex.getMessage() + "\n");
+            }
+        }
+        else 
+        {
+            showInputDataValidationErrorsForFlightSchedulePlan(constraintViolations);
+        }
     }
     
-    private void doDeleteFlightSchedulePlan(FlightSchedulePlan flightSchedulePlan) {
+    private void doDeleteFlightSchedulePlan(FlightSchedulePlan flightSchedulePlan)
+    {
+        Scanner scanner = new Scanner(System.in);
+        String input;
+        
         System.out.println("\n*** Flight Management System :: Schedule Manager :: Delete Flight Schedule Plan ***\n");
+        System.out.printf("Confirm Delete Flight Schedule Plan %s (Enter 'Y' to Delete)> ", flightSchedulePlan.getFlightSchedulePlanId());
+        input = scanner.nextLine().trim();
+        
+        if (input.equals("Y"))
+        {
+            try
+            {
+                flightSchedulePlanSessionBeanRemote.deleteFlightSchedulePlan(flightSchedulePlan.getFlightSchedulePlanId());
+                System.out.println("Flight schedule plan deleted successfully!\n");
+            }
+            catch (FlightNotFoundException | FlightSchedulePlanNotFoundException | DeleteFlightSchedulePlanException ex)
+            {
+                System.out.println("An error has occurred while deleting the flight schedule plan: " + ex.getMessage() + "\n");
+            }
+        }
+        else
+        {
+            System.out.println("Flight schedule plan NOT deleted!\n");
+        }
+    }
+    
+    
+    private void showInputDataValidationErrorsForFlightSchedulePlan(Set<ConstraintViolation<FlightSchedulePlan>>constraintViolations)
+    {
+        System.out.println("\nInput data validation error!:");
+            
+        for(ConstraintViolation constraintViolation:constraintViolations)
+        {
+            System.out.println("\t" + constraintViolation.getPropertyPath() + " - " + constraintViolation.getInvalidValue() + "; " + constraintViolation.getMessage());
+        }
+
+        System.out.println("\nPlease try again......\n");
     }
 }
