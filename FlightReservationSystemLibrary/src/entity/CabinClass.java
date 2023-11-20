@@ -60,6 +60,17 @@ public class CabinClass implements Serializable {
     public CabinClass() {
         flightReservations = new ArrayList<>();
     }
+
+    public CabinClass(CabinClassType cabinClassType, Integer numOfAisles, Integer numOfRows, Integer numOfSeatsAbreast, String seatConfiguration, Integer maxCapacity) {
+        this();
+        this.cabinClassType = cabinClassType;
+        this.numOfAisles = numOfAisles;
+        this.numOfRows = numOfRows;
+        this.numOfSeatsAbreast = numOfSeatsAbreast;
+        this.seatConfiguration = seatConfiguration;
+        this.maxCapacity = maxCapacity;
+    }
+    
     
     /**
      * @return the maxCapacity

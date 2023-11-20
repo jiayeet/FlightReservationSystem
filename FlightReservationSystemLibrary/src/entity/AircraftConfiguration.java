@@ -53,6 +53,14 @@ public class AircraftConfiguration implements Serializable {
     public AircraftConfiguration() {
         cabinClasses = new ArrayList<>();
     }
+
+    public AircraftConfiguration(String name, Integer numOfCabinClass, Integer maximumCapacity, AircraftType aircraftType, List<CabinClass> cabinClasses) {
+        this.name = name;
+        this.numOfCabinClass = numOfCabinClass;
+        this.maximumCapacity = maximumCapacity;
+        this.aircraftType = aircraftType;
+        this.cabinClasses = cabinClasses;
+    }
     
     /**
      * @return the maximumCapacity

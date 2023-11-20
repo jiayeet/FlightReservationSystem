@@ -41,6 +41,8 @@ public class FlightSchedule implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
     private Date arrivalDateTime;
+    @Column(nullable = false)
+    private Boolean enabled;
     @ManyToOne
     @JoinColumn(name = "flightSchedulePlanId")
     private FlightSchedulePlan flightSchedulePlan;
@@ -185,6 +187,20 @@ public class FlightSchedule implements Serializable {
      */
     public void setArrivalDateTime(Date arrivalDateTime) {
         this.arrivalDateTime = arrivalDateTime;
+    }
+
+    /**
+     * @return the enabled
+     */
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    /**
+     * @param enabled the enabled to set
+     */
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
     
 }
