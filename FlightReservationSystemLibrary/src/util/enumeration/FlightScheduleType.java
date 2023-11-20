@@ -11,6 +11,6 @@ package util.enumeration;
 public enum FlightScheduleType {
     SINGLE,
     MULTIPLE,
-    RECURRENTDAY,
-    RECURRENTWEEK
+    RECURRENTNDAY,
+    RECURRENTWEEKLY
 }

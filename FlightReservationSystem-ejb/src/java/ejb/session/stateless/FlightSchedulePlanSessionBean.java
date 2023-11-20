@@ -179,7 +179,7 @@ public class FlightSchedulePlanSessionBean implements FlightSchedulePlanSessionB
                     complementaryFlightSchedule.setFlightDurationMinutes(mainFlightSchedule.getFlightDurationMinutes());
 
                     GregorianCalendar complementaryArrivalDateTimeCalendar = new GregorianCalendar();
-                    complementaryArrivalDateTimeCalendar.setTime(complementaryFlightSchedule.getArrivalDateTime());
+                    complementaryArrivalDateTimeCalendar.setTime(complementaryFlightSchedule.getDepartureDateTime());
                     complementaryArrivalDateTimeCalendar.add(GregorianCalendar.HOUR_OF_DAY, complementaryFlightSchedule.getFlightDurationHours());
                     complementaryArrivalDateTimeCalendar.add(GregorianCalendar.MINUTE, complementaryFlightSchedule.getFlightDurationMinutes());
                     complementaryFlightSchedule.setArrivalDateTime(complementaryArrivalDateTimeCalendar.getTime());
@@ -193,6 +193,7 @@ public class FlightSchedulePlanSessionBean implements FlightSchedulePlanSessionB
                 newComplementaryFlightSchedulePlan.setMainFlightSchedulePlan(mainFlightSchedulePlan);
                 
                 newComplementaryFlightSchedulePlan.getFlightSchedules().addAll(complementaryFlightSchedules);
+                newComplementaryFlightSchedulePlan.setEnabled(true);
                 em.persist(newComplementaryFlightSchedulePlan);
 
                 for (FlightSchedule complementaryFlightSchedule : newComplementaryFlightSchedulePlan.getFlightSchedules())
